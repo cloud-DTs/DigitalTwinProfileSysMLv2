@@ -1,0 +1,94 @@
+FROM eclipse-temurin:21-jdk
+
+# Set Home directory
+ENV HOME=/home/sysml
+WORKDIR ${HOME}
+
+# Install required packages
+RUN apt-get update -qq && apt-get install -yqq \
+    gcc g++ wget inkscape \
+    texlive-fonts-recommended texlive-base texlive-xetex jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Miniconda installation
+RUN rm -rf ${HOME}/conda \
+    && wget -q https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-$(uname -m).sh \
+    && chmod +x Miniconda3-latest-Linux-$(uname -m).sh \
+    && ./Miniconda3-latest-Linux-$(uname -m).sh -b -p ${HOME}/conda \
+    && rm Miniconda3-latest-Linux-$(uname -m).sh
+
+# Add Conda to PATH
+ENV PATH="${HOME}/conda/bin:${HOME}/conda/condabin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# Conda setup
+RUN conda config --set always_yes yes --set changeps1 no \
+    && conda tos accept \
+    && conda update -n base -y conda \
+    && conda install -n base -y conda-build conda-libmamba-solver \
+    && conda config --set solver libmamba
+
+# Create sysml environment
+RUN conda create -n sysml python=3.11 -y
+SHELL ["conda", "run", "-n", "sysml", "/bin/bash", "-c"]
+RUN pip install nbformat nbconvert
+# SysML Release download
+ARG RELEASE=2025-02
+RUN wget -q https://github.com/Systems-Modeling/SysML-v2-Release/archive/${RELEASE}.tar.gz -O ${RELEASE}.tar.gz \
+    && tar xzf ${RELEASE}.tar.gz \
+    && rm ${RELEASE}.tar.gz
+
+# Go to Jupyter installer folder
+WORKDIR ${HOME}/SysML-v2-Release-${RELEASE}/install/jupyter
+
+# Install terminal notebook editor
+RUN pip install euporie
+
+# Install SysMLv2 Jupyter Kernel
+RUN ./install.sh
+
+# Point publish command to local API server
+ARG SYSML_API_SERVER=http://sysmlapiserver:9000
+RUN jq --arg api_server "${SYSML_API_SERVER}" \
+    '.env.ISYSML_API_BASE_PATH = $api_server' \
+    ${HOME}/conda/envs/sysml/share/jupyter/kernels/sysml/kernel.json \
+    > /tmp/kernel.json \
+    && mv /tmp/kernel.json ${HOME}/conda/envs/sysml/share/jupyter/kernels/sysml/kernel.json
+
+# Go back to top-level folder
+WORKDIR ${HOME}/SysML-v2-Release-${RELEASE}/
+
+# Organize notebooks
+RUN mkdir -p doc notebooks \
+    && find . -maxdepth 1 -type f -exec mv {} doc/ \;
+
+# Copy the notebook to container
+COPY publish_notebook.ipynb ${HOME}/SysML-v2-Release-${RELEASE}/publish_notebook.ipynb
+
+# Update notebook metadata to use sysml kernel
+RUN python3 - <<EOF
+import json
+notebook_path = "${HOME}/SysML-v2-Release-${RELEASE}/publish_notebook.ipynb"
+with open(notebook_path,'r') as f:
+    nb = json.load(f)
+
+nb['metadata']['kernelspec'] = {
+    "name": "sysml",
+    "display_name": "SysML Kernel",
+    "language": "python"
+}
+
+with open(notebook_path,'w') as f:
+    json.dump(nb, f, indent=2)
+EOF
+
+# Trust notebooks
+RUN find . -name "*.ipynb" -exec jupyter trust {} \;
+
+# Expose Jupyter Lab port
+EXPOSE 8888
+
+COPY process_sysml.py /home/sysml/process_sysml.py
+COPY DigitalTwinLibrary.sysml /home/sysml/DigitalTwinLibrary.sysml
+COPY MetaLibrary.sysml /home/sysml/MetaLibrary.sysml
+
+ENTRYPOINT ["conda", "run", "-n", "sysml", "python3", "/home/sysml/process_sysml.py"]

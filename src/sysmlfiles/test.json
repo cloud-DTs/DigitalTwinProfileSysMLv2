@@ -1,0 +1,130 @@
+{
+  "id": "90b8aebb-a937-41f4-b64a-0b1071b35b0b",
+  "name": "MicroGridDigitalTwin",
+  "entities": [
+    {
+      "id": "053415f8-55ad-44da-aece-5d1a1aeabf53",
+      "name": "MicroGrid",
+      "subEntities": [
+        {
+          "id": "989a2b90-31b3-441d-8863-05c44fddedfd",
+          "name": "battery",
+          "subEntities": [
+            {
+              "id": "a708b64b-925e-4eb9-bb2a-ca3130e4731c",
+              "name": "test",
+              "subEntities": [],
+              "components": [],
+              "constComponent": null
+            }
+          ],
+          "components": [
+            {
+              "id": "c90232f2-b115-4839-a6eb-1af19dad39c7",
+              "name": "p12",
+              "attributes": [
+                {
+                  "id": "2c68dd03-adc0-4747-b2e0-fbd2671197ba",
+                  "name": "consumption",
+                  "dataType": "STRING"
+                }
+              ]
+            }
+          ],
+          "constComponent": {
+            "id": "989a2b90-31b3-441d-8863-05c44fddedfdconst_component",
+            "name": "batteryconst_component",
+            "attributes": [
+              {
+                "id": "96522d3e-b902-49c4-853b-838484b52cb9",
+                "name": "maxConsumption",
+                "dataType": "STRING",
+                "value": ""
+              }
+            ]
+          }
+        },
+        {
+          "id": "b9c54794-6296-489b-88f4-a0357d7e1c6d",
+          "name": "sieVercharge",
+          "subEntities": [],
+          "components": [
+            {
+              "id": "60486184-fdb0-4db9-9636-f8c3db981e55",
+              "name": "p13",
+              "attributes": [
+                {
+                  "id": "2c68dd03-adc0-4747-b2e0-fbd2671197ba",
+                  "name": "consumption",
+                  "dataType": "STRING"
+                }
+              ]
+            }
+          ],
+          "constComponent": {
+            "id": "b9c54794-6296-489b-88f4-a0357d7e1c6dconst_component",
+            "name": "sieVerchargeconst_component",
+            "attributes": [
+              {
+                "id": "88a42c3c-7dc5-4d05-a57e-f45889a7e31e",
+                "name": "maxConsumption",
+                "dataType": "STRING",
+                "value": ""
+              }
+            ]
+          }
+        },
+        {
+          "id": "81c53188-b065-4cbd-bec5-ab199c6bfed7",
+          "name": "kebaP30",
+          "subEntities": [],
+          "components": [
+            {
+              "id": "bb5e98f9-ed8d-4dff-9e18-d6bd6f18d316",
+              "name": "p14",
+              "attributes": [
+                {
+                  "id": "2c68dd03-adc0-4747-b2e0-fbd2671197ba",
+                  "name": "consumption",
+                  "dataType": "STRING"
+                }
+              ]
+            }
+          ],
+          "constComponent": {
+            "id": "81c53188-b065-4cbd-bec5-ab199c6bfed7const_component",
+            "name": "kebaP30const_component",
+            "attributes": [
+              {
+                "id": "a430bd85-c426-4ee5-b717-8ab52038aa09",
+                "name": "maxConsumption",
+                "dataType": "STRING",
+                "value": ""
+              }
+            ]
+          }
+        }
+      ],
+      "components": [],
+      "constComponent": null
+    }
+  ],
+  "dataBases": [
+    {
+      "id": "86d6e26a-3f08-4a73-9365-2be4d5f3466f",
+      "name": "TimeSeriesDB",
+      "tier": "HOT",
+      "dbType": "RELATIONAL"
+    }
+  ],
+  "measurementInterfaces": [],
+  "strategies": [
+    {
+      "id": "a83fd864-0381-450c-96d9-3b2c4dd2f568",
+      "name": "CheckBatteryConsumption",
+      "leftOperand": null,
+      "operator": "==",
+      "rightOperand": null
+    }
+  ]
+}
