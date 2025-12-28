@@ -96,3 +96,4 @@ def queryByType(select: List[str], cls: Type[T], apiType: str) -> List[T]:
     
     response: List[T] = query(cls, query_input)
     return response
+

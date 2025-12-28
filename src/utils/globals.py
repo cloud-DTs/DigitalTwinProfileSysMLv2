@@ -1,9 +1,10 @@
 
 import logging
+from .Repository import Repository
 HOST = "http://localhost:9000"
 PROJECT_ID = None
 LAST_COMMIT_ID = None
-    
+DATABASE = None    
 def get_project_id() -> str:
     global PROJECT_ID
     if PROJECT_ID is None:
@@ -30,3 +31,15 @@ def get_last_commit_id() -> str:
 def set_last_commit_id(commit_id:str) -> str:
     global LAST_COMMIT_ID
     LAST_COMMIT_ID = commit_id
+
+def initDataBase()->Repository:
+    global DATABASE
+    DATABASE = Repository()
+    return DATABASE
+
+def get_database()->Repository:
+    global DATABASE
+    if DATABASE is None:
+        logging.error("Database not initialized. Please initialize the database first.")
+        raise Exception("Database not initialized. Please initialize the database first.")
+    return DATABASE

@@ -1,18 +1,4 @@
-from enum import Enum
-
-class ApiTypes(Enum):
-    METADATADEFINITION = "MetadataDefinition"
-    METADATAUSAGE = "MetadataUsage"
-    DEFINITION = "Definition"
-    REDEFINITION = "Redefinition"
-    FEATUREVALUE = "FeatureValue"
-    LITERALSTRING = "LiteralString"
-    FEATUREREFERENCE = "FeatureReferenceExpression"
-    FeatureChainExpression = "FeatureChainExpression"
-    EnumerationUsage = "EnumerationUsage"
-    OwningMembership = "OwningMembership"
-
-
+from .ApiTypes import ApiTypes
 from enum import Enum
 
 class MetaTypes(Enum):

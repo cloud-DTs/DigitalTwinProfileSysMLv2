@@ -1,6 +1,6 @@
+from __future__ import annotations
 from sysml_v2_api_client import Element as ElementOrigin
 from .CommonElement import CommonElement
-
 class Element(CommonElement,ElementOrigin):
     openapi_types = {**CommonElement.openapi_types, **ElementOrigin.openapi_types}
     openapi_types['name'] = 'str'
@@ -12,6 +12,8 @@ class Element(CommonElement,ElementOrigin):
     openapi_types ['membership'] = 'list[dict[str, str]]'
     openapi_types['memberElement'] = 'dict[str, str]'
     openapi_types['chainingFeature'] = 'list[dict[str, str]]'
+    openapi_types['value'] = 'str'
+    openapi_types['referent'] = 'str'
     attribute_map = {**CommonElement.attribute_map, **ElementOrigin.attribute_map}
     attribute_map['name'] = 'name'
     attribute_map['owner'] = 'owner'
@@ -22,6 +24,8 @@ class Element(CommonElement,ElementOrigin):
     attribute_map['membership'] = 'membership'
     attribute_map['memberElement'] = 'memberElement'
     attribute_map['chainingFeature'] = 'chainingFeature'
+    attribute_map['value'] = 'value'
+    attribute_map['referent'] = 'referent'
 
 
     def __init__(self):
@@ -37,6 +41,8 @@ class Element(CommonElement,ElementOrigin):
         self._membership = None
         self._memberElement = None
         self._chainingFeature = None
+        self._value = None
+        self._referent = None
 
     @property
     def name(self):
@@ -104,3 +110,70 @@ class Element(CommonElement,ElementOrigin):
     @chainingFeature.setter
     def chainingFeature(self, value):
         self._chainingFeature = value
+
+    @property
+    def value(self):
+        return self._value
+    @value.setter
+    def value(self, value):
+        self._value = value
+    @property
+    def referent(self):
+        return self._referent
+    @referent.setter
+    def referent(self, referent):
+        self._referent = referent
+
+    def get_member_ship(self) -> list['Element']:
+        from ..element import getElementById
+        members = []
+        if self.membership:
+            for mem in self.membership:
+                member_id = mem.get('id')
+                if member_id:
+                    member_element = getElementById(member_id)
+                    if member_element:
+                        members.append(member_element)
+        return members
+    
+    def get_owned_features(self) -> list['Element']:
+        from ..element import getElementById
+        features = []
+        if self.ownedFeature:
+            for feat in self.ownedFeature:
+                feature_id = feat.get('id')
+                if feature_id:
+                    feature_element = getElementById(feature_id)
+                    if feature_element:
+                        features.append(feature_element)
+        return features
+    def get_inherited_features(self) -> list['Element']:
+        from ..element import getElementById
+        features = []
+        if self.inheritedFeature:
+            for feat in self.inheritedFeature:
+                feature_id = feat.get('id')
+                if feature_id:
+                    feature_element = getElementById(feature_id)
+                    if feature_element:
+                        features.append(feature_element)
+        return features
+    
+    def get_all_sub_features(self) -> list['Element']:
+        
+        all_features = self.get_owned_features()
+        if self.isIneherited:
+            inherited = self.get_inherited_features()
+            all_features.extend(inherited)
+        return all_features
+
+    def get_member_element(self) -> Element|None:
+        from ..element import getElementById
+        if self.memberElement:
+            member_id = self.memberElement.get('@id',None)
+            if member_id:
+                member_element = getElementById(member_id)
+                return member_element
+        return None
+
+    

@@ -38,6 +38,7 @@ def main():
     logging.info("Environment setup complete.")
 
     logging.info("Starting parsing process...")
+    globals.initDataBase()
     from src.parser import Parser
     parser = Parser()
     parser.parse()
