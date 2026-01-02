@@ -3,15 +3,12 @@ package MetaModelDigitalTwin {
     private import DigitalTwinLibrary::*;
     private import Metaobjects::SemanticMetadata;
     public import DigitalTwinLibrary::AttributeDataType;
-    public import DigitalTwinLibrary::MeasurementInterfaceType;
-    public import DigitalTwinLibrary::LibTwinDataBaseTier;
     public import DigitalTwinLibrary::LibTwinDataBaseType;
     public import DigitalTwinLibrary::ComparisonOperator;
     public import DigitalTwinLibrary::StrategyType;
+    public import DigitalTwinLibrary::FeedbackTopicType;
+  
 
-    metadata def testr specializes SemanticMetadata{
-
-    }
     metadata def Twin specializes SemanticMetadata {
         redefines baseType = LibTwin meta SysML::PartDefinition;
         subsets annotatedElement : SysML::Definition;
@@ -28,6 +25,7 @@ package MetaModelDigitalTwin {
         subsets annotatedElement : SysML::Usage;
     }
     
+    
     metadata def Component specializes SemanticMetadata{
         redefines baseType = LibTwinComponent meta SysML::PartDefinition;
         subsets annotatedElement : SysML::Definition;
@@ -35,36 +33,6 @@ package MetaModelDigitalTwin {
 
     metadata def component specializes SemanticMetadata{
         redefines baseType = cmponents meta SysML::PartUsage;
-        subsets annotatedElement : SysML::Usage;
-    }
-
-    metadata def DataBase specializes SemanticMetadata{
-        redefines baseType =LibTwinDataBase meta SysML::PartDefinition;
-        subsets annotatedElement : SysML::Definition;
-    }
-
-    metadata def database specializes SemanticMetadata{
-        redefines baseType = dataBases meta SysML::PartUsage;
-        subsets annotatedElement : SysML::Usage;
-    }
-
-    metadata def MeasureInterface specializes SemanticMetadata{
-        redefines baseType=MeasurementInterface meta SysML::InterfaceDefinition;
-        subsets annotatedElement : SysML::InterfaceDefinition;
-    }
-
-    metadata def measureInterface specializes SemanticMetadata{
-        redefines baseType=measurementInterfaces meta SysML::InterfaceUsage;
-        subsets annotatedElement : SysML::InterfaceUsage;
-    }
-
-    metadata def Measurement specializes SemanticMetadata{
-        redefines baseType=MeasurePort meta SysML::PortDefinition;
-        subsets annotatedElement : SysML::Definition;
-    }
-
-    metadata def measure specializes SemanticMetadata{
-        redefines baseType=measurements meta SysML::PortUsage;
         subsets annotatedElement : SysML::Usage;
     }
 
@@ -84,7 +52,7 @@ package MetaModelDigitalTwin {
     }
 
     metadata def measureAttribute specializes SemanticMetadata{
-        redefines baseType=measurement meta SysML::AttributeUsage;
+        redefines baseType=measurements meta SysML::AttributeUsage;
         subsets annotatedElement : SysML::Usage;
        
     }

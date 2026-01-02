@@ -20,12 +20,5 @@ class TwinDataBaseType(Enum):
 class TwinDatabase(TwinModel):
     tier: TwinDataBaseTier = TwinDataBaseTier.HOT
     dbType: TwinDataBaseType = TwinDataBaseType.RELATIONAL
+    retentionDays: int = 30
     parentTwin: Twin = None
-
-    def to_dict(self) -> dict:
-        return {
-            "id": self.get_unique_id(),
-            "name": self.name,
-            "tier": self.tier.value,
-            "dbType": self.dbType.value
-        }

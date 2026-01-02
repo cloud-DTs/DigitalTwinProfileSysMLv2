@@ -76,5 +76,4 @@ class Parser():
         logging.info(f"Total MetadataUsages parsed: {sum(len(usages) for usages in self.metaDataUsageMap.values())}")
 
         self.modelMapper = ModelMapper(self.metaDataDefinitonsMap,self.metaDataUsageMap,self.elementMetaTypeMap) 
-        self.modelMapper.mapModel()
-        return []
+        return self.modelMapper.mapModel()

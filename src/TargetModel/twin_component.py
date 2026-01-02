@@ -23,6 +23,20 @@ class Component(TwinModel):
             "name": self.name,
             "attributes": [attribute.to_dict() for attribute in self.attributes]
         }
+    
+    def to_hierarchy_dict(self) ->dict:
+        return {
+            "iotDeviceId": self.id,
+            "type":"component",
+            "name": self.name
+        }
+
+    def to_iot_device_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "properties": [attribute.to_iot_device_dict() for attribute in self.attributes]
+        }
+
 
 @dataclass
 class ConstComponent(Component):

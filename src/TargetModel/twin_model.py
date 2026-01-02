@@ -7,5 +7,14 @@ class TwinModel():
     id: Optional[str] = None
     name: Optional[str] = None
 
-    def get_unique_id(self) -> str:
-        return self.id
+    def to_hierarchy_dict(self) ->dict:
+        return {}
+
+    def to_iot_device_dict(self) -> dict:
+        return {}
+
+    def to_event_dict(self) -> dict:
+        return {}
+
+    def to_config_dict(self) -> dict:
+        return {}

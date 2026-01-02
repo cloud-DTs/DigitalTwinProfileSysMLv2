@@ -26,7 +26,13 @@ class ApiElement:
                     f"Allowed types are: {allowed_list}. Element ID: {self.id}"
                 )
 
-        if actual_value is not None and not isinstance(actual_value, expected_type):
+        if field_name == "value":
+            if not isinstance(actual_value, (str, int, float, bool)):
+                raise TypeError(
+                    f"Data Type Mismatch for 'value': Expected primitive, "
+                    f"but got {type(actual_value)}. ID: {self.id}"
+                )
+        elif actual_value is not None and not isinstance(actual_value, expected_type):
             raise TypeError(
                 f"Data Type Mismatch for field '{field_name}': "
                 f"Expected {expected_type}, but got {type(actual_value)}. Element ID: {self.id}"

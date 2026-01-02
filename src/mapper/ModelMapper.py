@@ -7,6 +7,7 @@ from ..TargetModel.twin import Twin
 from ..TargetModel.twin_component import Component
 from ..TargetModel.twin_database import TwinDatabase,TwinDataBaseTier,TwinDataBaseType
 from ..TargetModel.twin_entity import TwinEntity
+from ..TargetModel.twin_strategy import FeedbackTopicType
 from ..TargetModel.twin_model import TwinModel
 from ..TargetModel.twin_constAttribute import ConstAttribute
 from ..TargetModel.twin_measureAttribute import MeasureAttribute, AttributeDataType
@@ -43,11 +44,9 @@ class MapRoutine():
     
 
     def resolve_attribute(self, element: ApiElement, attr_name: str, valueType: ApiTypes = ApiTypes.LITERALSTRING):
-        # 1. Subfeatures laden (Owned + Inherited)
         all_sub_features = ApiElement.load_list_from_api(element, Fields.OWNEDFEATURE) + \
                           ApiElement.load_list_from_api(element, Fields.INHERITEDFEATURE)
 
-        logging.info("First loop!")
         for attribute_candidate in all_sub_features:
             if attribute_candidate.get_field(Fields.NAME) == attr_name:
             
@@ -58,13 +57,10 @@ class MapRoutine():
                         
 
                         if valueType == ApiTypes.FEATUREREFERENCEEXPRESSION:
-                            logging.info("FeatureReference found!,"+ str(featureValue.raw_data))
                             refElement = ApiElement.load_field_from_api(featureValue, Fields.REFERENT)
                             return refElement.get_field(Fields.NAME) if refElement else None
 
                         if valueType == ApiTypes.FEATURECHAINEXPRESSION:
-                            logging.info("FeatureChainExpression found!,"+ str(featureValue.raw_data))
-                            attribute_id = None
                             memberships = ApiElement.load_list_from_api(featureValue, Fields.MEMBERSHIP)
                             
                             for m_element in memberships:
@@ -74,19 +70,24 @@ class MapRoutine():
                                     if memberElement:
                                         chainTest = memberElement.get_field(Fields.CHAININGFEATURE)
                                         chain = ApiElement.load_list_from_api(memberElement, Fields.CHAININGFEATURE)
+                                        path_ids = [ch.get_field(Fields.ID) for ch in chain]
                                         if  len(chainTest) != len(chain):
                                             raise Exception("Chain length mismatch!")
                                         if len(chain) > 0:
-                                            attribute_id = chain[-1].get_field(Fields.ID)
-                                            
-                                            all_mapped_attribute_ids = []
-                                            if MeasureAttribute in globals.DATABASE.dataBases:
-                                                all_mapped_attribute_ids.extend([path[-1] for path in globals.DATABASE.dataBases[MeasureAttribute].dataTable.keys()])
-                                            if ConstAttribute in globals.DATABASE.dataBases:
-                                                all_mapped_attribute_ids.extend([path[-1] for path in globals.DATABASE.dataBases[ConstAttribute].dataTable.keys()])
-
-                                            if any(attribute_id == instance_key for instance_key in all_mapped_attribute_ids):
-                                                return attribute_id
+                                            if globals.DATABASE.dataBases.get(MeasureAttribute,None):
+                                                for path_tuple, model in globals.DATABASE.dataBases[MeasureAttribute].dataTable.items():
+                                                    if list(path_tuple[-len(path_ids):]) == path_ids:
+                                                        return model
+                                            if globals.DATABASE.dataBases.get(ConstAttribute,None):
+                                                for path_tuple, model in globals.DATABASE.dataBases[ConstAttribute].dataTable.items():
+                                                    if list(path_tuple[-len(path_ids):]) == path_ids:
+                                                        return model
+                                            if globals.DATABASE.dataBases.get(Component,None):
+                                                for path_tuple, model in globals.DATABASE.dataBases[Component].dataTable.items():
+                                                    if list(path_tuple[-len(path_ids):]) == path_ids:
+                                                        return model
+                                                
+                        
                         return featureValue.get_field(Fields.VALUE)
 
         redef_refs = element.get_field(Fields.OWNEDREDEFINITION) or []
@@ -106,10 +107,33 @@ class MapRoutine():
 class TwinRoutine(MapRoutine):
     def map(self,element: ApiElement, parent:ApiElement, my_path:list[str], current_path:list[str]) -> Twin:
         twin = Twin(name=element.get_field(Fields.NAME))
+
+        hotDatabaseType = self.resolve_attribute(element, "hotDatabaseType", ApiTypes.FEATUREREFERENCEEXPRESSION)
+        coldDatabaseType = self.resolve_attribute(element, "coldDataBaseType", ApiTypes.FEATUREREFERENCEEXPRESSION)
+        hotRetentionDays = self.resolve_attribute(element, "hotDatabaseRetentionDays", ApiTypes.LITERALINTEGER)
+        coldRetentionDays = self.resolve_attribute(element, "coldDatabaseRetentionDays", ApiTypes.LITERALINTEGER)
+        if hotDatabaseType is None:
+            logging.warning(f"Twin {element.get_field(Fields.NAME)} does not have a hotDatabaseType defined.")
+        if hotRetentionDays is None:
+            logging.warning(f"Twin {element.get_field(Fields.NAME)} does not have a hotRetentionDays defined.")
+        
+
+        if coldDatabaseType is None:
+            logging.warning(f"Twin {element.get_field(Fields.NAME)} does not have a coldDatabaseType defined.")
+        if coldRetentionDays is None:
+            logging.warning(f"Twin {element.get_field(Fields.NAME)} does not have a coldRetentionDays defined.")
+        
+        twin.hotdatabase = TwinDatabase(name=f"{element.get_field(Fields.NAME)}_hotDatabase",id=element.get_field(Fields.ID)+"_hotDatabase")
+        twin.hotdatabase.dbType = TwinDataBaseType(str(hotDatabaseType).upper()) if hotDatabaseType else TwinDataBaseType.RELATIONAL
+        twin.hotdatabase.retentionDays = int(hotRetentionDays) if hotRetentionDays else 30
+        twin.colddatabase = TwinDatabase(name=f"{element.get_field(Fields.NAME)}_coldDatabase",id=element.get_field(Fields.ID)+"_coldDatabase")
+        twin.colddatabase.dbType = TwinDataBaseType(str(coldDatabaseType).upper()) if coldDatabaseType else TwinDataBaseType.RELATIONAL
+        twin.colddatabase.retentionDays = int(coldRetentionDays) if coldRetentionDays else 30
+        
         return twin
     
     def get_sub_meta_types(self) -> list[MetaTypes]:
-        return [MetaTypes.entity,MetaTypes.database,MetaTypes.condition]
+        return [MetaTypes.entity,MetaTypes.condition]
 
 class EntityRoutine(MapRoutine):
     def map(self, element: ApiElement, parent: ApiElement, my_path: list[str], parent_path: list[str]) -> TwinEntity:
@@ -129,28 +153,7 @@ class EntityRoutine(MapRoutine):
     def get_sub_meta_types(self) -> list[MetaTypes]:
         return [MetaTypes.entity,MetaTypes.component,MetaTypes.constAttribute]
 
-class DatabaseRoutine(MapRoutine):
-    def map(self, element: ApiElement, parent: ApiElement, my_path:list[str], current_path:list[str]) -> TwinDatabase:
-        twinDatabase = TwinDatabase(name=element.get_field(Fields.NAME))
-        
-        parent_obj = self.get_repo_model(Twin, current_path)
 
-        if parent_obj:
-            parent_obj.add_dataBase(twinDatabase)
-        else:
-            logging.error("#database is ownly allowed inside a Twin!")
-            raise Exception(f"Parent with path: {current_path} not found in twinMap for Database with id: {element.get_field(Fields.ID)}")
-        
-        dbTier = self.resolve_attribute(element, "libTwinDataBaseTier", ApiTypes.FEATUREREFERENCEEXPRESSION)
-        dbType = self.resolve_attribute(element, "libTwinDataBaseType", ApiTypes.FEATUREREFERENCEEXPRESSION)
-        if dbTier is not None:
-            twinDatabase.tier = TwinDataBaseTier(str(dbTier).upper())
-        if dbType is not None:
-            twinDatabase.dbType = TwinDataBaseType(str(dbType).upper())
-        return twinDatabase
-    
-    def get_sub_meta_types(self) -> list[MetaTypes]:
-        return []
 class ConstAttributeRoutine(MapRoutine):
     def map(self, element: ApiElement, parent: ApiElement, my_path:list[str], current_path:list[str]) -> ConstAttribute:
         constAttribute = ConstAttribute(name=element.get_field(Fields.NAME), value="")
@@ -178,11 +181,12 @@ class MeasureAttributeRoutine(MapRoutine):
     def map(self, element: ApiElement, parent: Element, my_path: list[str], current_path: list[str]) -> MeasureAttribute:
         measureAttribute = MeasureAttribute(name=ApiElement.get_field(element, Fields.NAME))
         
-        if current_path[-1] in self.mapper.attributePortComponentMap:
-            self.mapper.attributePortComponentMap[current_path[-1]].add_attribute(measureAttribute)
-        else:
-            logging.error(f"#measureAttribute {element.get_field(Fields.NAME)} is only allowed inside a #measure port!")
-            
+        component_obj = self.get_repo_model(Component, current_path)
+        if component_obj is None:
+            logging.error(f"#measureAttribute {element.get_field(Fields.NAME)} is only allowed inside a #component or #Component!")
+            sys.exit(1)
+        
+        component_obj.add_attribute(measureAttribute)
         datatype = self.resolve_attribute(element, "dataType", ApiTypes.FEATUREREFERENCEEXPRESSION)
         if datatype:
             measureAttribute.dataType = AttributeDataType(str(datatype).upper())
@@ -200,26 +204,14 @@ class ComponentRoutine(MapRoutine):
         if entity_obj:
             entity_obj.add_component(twinComponent)
         else:
-            logging.error(f"Parent Entity for Component {element.get_field(Fields.NAME)} not found at {current_path}")
+            logging.error(f"Parent Entity for Component {element.get_field(Fields.NAME)} not found at {current_path}. #component is only allowed inside a #entity or #Entity!")
+            sys.exit(1)
             
         return twinComponent
 
     def get_sub_meta_types(self) -> list[MetaTypes]:
-        return [MetaTypes.measure]
-
-class PorpertyRoutine(MapRoutine):
-    def map(self, element: ApiElement, parent: ApiElement, my_path: list[str], current_path: list[str]):
-        comp_obj = self.get_repo_model(Component, current_path)
-        
-        if comp_obj:
-            self.mapper.attributePortComponentMap[element.get_field(Fields.ID)] = comp_obj
-        else:
-            logging.error(f"#measure port {element.get_field(Fields.NAME)} must be inside a TwinComponent")
-        
-        return None
-
-    def get_sub_meta_types(self) -> list[MetaTypes]:
         return [MetaTypes.measureAttribute]
+
 
 class ConditionRoutine(MapRoutine):
     def map(self, element: ApiElement, parent: ApiElement, my_path: list[str], current_path: list[str]) -> Condition:
@@ -228,23 +220,12 @@ class ConditionRoutine(MapRoutine):
         parent_twin = self.get_repo_model(Twin, current_path)
         if parent_twin:
             parent_twin.add_condition(condition)
+        else:
+            logging.error(f"Parent Twin for Condition {element.get_field(Fields.NAME)} not found at {current_path}. #condition is only allowed inside a #twin!")
+            sys.exit(1)
 
-        left_guid = self.resolve_attribute(element, "leftOperand", ApiTypes.FEATURECHAINEXPRESSION)
-        right_guid = self.resolve_attribute(element, "rightOperand", ApiTypes.FEATURECHAINEXPRESSION)
-
-        def find_operand(guid):
-            if not guid: return None
-            for attr_type in [MeasureAttribute, ConstAttribute]:
-                if attr_type in globals.DATABASE.dataBases:
-                    db = globals.DATABASE.dataBases[attr_type]
-                    for path_tuple, model in db.dataTable.items():
-                        if path_tuple[-1] == guid:
-                            return model
-            return None
-
-
-        condition.leftOperand = find_operand(left_guid)
-        condition.rightOperand = find_operand(right_guid)
+        condition.leftOperand = self.resolve_attribute(element, "leftOperand", ApiTypes.FEATURECHAINEXPRESSION)
+        condition.rightOperand = self.resolve_attribute(element, "rightOperand", ApiTypes.FEATURECHAINEXPRESSION)
         
         operator = self.resolve_attribute(element, "operator", ApiTypes.FEATUREREFERENCEEXPRESSION)
         if operator: 
@@ -259,15 +240,30 @@ class StrategyRoutine(MapRoutine):
     def map(self, element: ApiElement, parent: ApiElement, my_path: list[str], current_path: list[str]) -> Strategy:
         strategy = Strategy(name=element.get_field(Fields.NAME))
         
+        print("Finding parent Condition for Strategy at name: " + element.get_field(Fields.NAME))
         cond_obj = self.get_repo_model(Condition, current_path)
         if cond_obj:
             cond_obj.add_strategy(strategy)
         else:
-            logging.error(f"Parent Condition for Strategy {element.get_field(Fields.NAME)} not found")
+            logging.error(f"Parent Condition for Strategy {element.get_field(Fields.NAME)} not found. #strategyAction is only allowed inside a #condition!")
+            sys.exit(1)
 
         strategy.strategyType = StrategyType(str(self.resolve_attribute(element, "strategyType", ApiTypes.FEATUREREFERENCEEXPRESSION)).lower())
         strategy.pathToCode = str(self.resolve_attribute(element, "pathToCode", ApiTypes.LITERALSTRING))
+        strategy.external = self.resolve_attribute(element, "external", ApiTypes.LITERALBOOLEAN)
+        strategy.feedbackTopicType = FeedbackTopicType(str(self.resolve_attribute(element, "feedbackTopicType", ApiTypes.FEATUREREFERENCEEXPRESSION)).upper())
+        external_payload = self.resolve_attribute(element, "customPayload", ApiTypes.LITERALSTRING)
+        if external_payload:
+            try:
+                strategy.customPaylod = json.loads(external_payload)
+            except json.JSONDecodeError as e:
+                logging.error(f"Error decoding JSON for customPayload in Strategy {element.get_field(Fields.NAME)}: {e}. CustomPayload needs to be a valid JSON string.")
+                strategy.customPaylod = None
+                sys.exit(1)
         
+        strategy.componentTopic = self.resolve_attribute(element, "componentTopic", ApiTypes.FEATURECHAINEXPRESSION)
+       
+        strategy.externalTopic = str(self.resolve_attribute(element, "externalTopic", ApiTypes.LITERALSTRING)) or ""
         return strategy
 
     def get_sub_meta_types(self) -> list[MetaTypes]:
@@ -281,11 +277,9 @@ class ModelMapper():
         self.routines = {
             MetaTypes.Twin: TwinRoutine(self),
             MetaTypes.entity: EntityRoutine(self),
-            MetaTypes.database: DatabaseRoutine(self),
             MetaTypes.component: ComponentRoutine(self),
             MetaTypes.constAttribute: ConstAttributeRoutine(self),
             MetaTypes.measureAttribute: MeasureAttributeRoutine(self),
-            MetaTypes.measure: PorpertyRoutine(self),
             MetaTypes.condition: ConditionRoutine(self),
             MetaTypes.strategyAction: StrategyRoutine(self),
         }
@@ -298,17 +292,6 @@ class ModelMapper():
             if element:
                 self.elementMapper(element, None, self.routines[MetaTypes.Twin], []) 
         
-        if Twin in globals.DATABASE.dataBases:
-            print("\n--- Mapped Twins JSON Output ---")
-            twin_wrapper = globals.DATABASE.dataBases[Twin]
-            
-            for path_key, twin_obj in twin_wrapper.dataTable.items():
-                if hasattr(twin_obj, 'to_dict'):
-                    import json
-                    print(json.dumps(twin_obj.to_dict(), indent=4))
-                elif hasattr(twin_obj, 'todict'):
-                    print(twin_obj.todict)
-            print("----------------------------------\n")
         return list(globals.DATABASE.dataBases[Twin].dataTable.values())
 
     def elementMapper(self, element: ApiElement, parent: Optional[ApiElement], routine: MapRoutine, current_path: list[str]):

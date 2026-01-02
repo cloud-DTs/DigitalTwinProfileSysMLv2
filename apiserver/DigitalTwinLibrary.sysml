@@ -1,12 +1,16 @@
 library package DigitalTwinLibrary{
 
     abstract part libTwinEntities:LibTwinEntity[0..*];
-    abstract part dataBases:LibTwinDataBase[0..*];
-    abstract interface measurementInterfaces:MeasurementInterface[0..*];
+    
+    abstract attribute libTwinDataBaseType:LibTwinDataBaseType;
+    abstract attribute retentionDays:ScalarValues::Integer;
     abstract part def LibTwin{
         abstract part redefines libTwinEntities;
-        abstract part redefines dataBases;
-        abstract interface redefines measurementInterfaces;
+        abstract attribute hotDatabaseType redefines libTwinDataBaseType default LibTwinDataBaseType::RELATIONAL;
+        abstract attribute hotDatabaseRetentionDays redefines retentionDays default 30;
+        abstract attribute coldDataBaseType redefines libTwinDataBaseType default LibTwinDataBaseType::RELATIONAL;
+        abstract attribute coldDatabaseRetentionDays redefines retentionDays default 30;
+       
     }
     abstract attribute const_attributes:ConstAttributes[0..*];
     abstract part sbEntities:LibTwinEntity[0..*];
@@ -21,71 +25,65 @@ library package DigitalTwinLibrary{
         
 
     }
-    
-    out abstract port measurements:MeasurePort[0..*];
+    abstract attribute measurements:LibDTAttributes[0..*];
     abstract part def LibTwinComponent{
-        out abstract port measures redefines measurements;
+        abstract attribute redefines measurements;
     }
-    abstract attribute libTwinDataBaseTier:LibTwinDataBaseTier;
-    abstract attribute libTwinDataBaseType:LibTwinDataBaseType;
-    in abstract port dataBaseInPort:~MeasurePort;
-    abstract part def LibTwinDataBase{
-        abstract attribute redefines libTwinDataBaseTier;
-        abstract attribute redefines libTwinDataBaseType;
-        in abstract port redefines dataBaseInPort;
-    }
-    abstract attribute type:MeasurementInterfaceType;
-    abstract interface def MeasurementInterface{
-        abstract attribute redefines type; 
-        end source : MeasurePort;
-        end target : ~MeasurePort;
-    }
+   
+   
     abstract attribute leftOperand:LibDTAttributes;
     abstract attribute operator:ComparisonOperator;
     abstract attribute rightOperand:LibDTAttributes;
-    abstract attribute result:ScalarValues::Boolean;
     abstract part strategieActions:LibTwinStrategyAction[0..*];
+    
+    
     abstract action def LibTwinConditionAction{
         abstract attribute redefines leftOperand;
         abstract attribute redefines operator;
         abstract attribute redefines rightOperand;
-        abstract attribute redefines result;
         abstract part redefines strategieActions;
     }
     abstract attribute name:ScalarValues::String;
     abstract attribute description:ScalarValues::String;
     abstract attribute pathToCode:ScalarValues::String;
+    abstract attribute external:ScalarValues::Boolean;
     abstract attribute strategyType:StrategyType;
+ 
+    abstract attribute customPayload:ScalarValues::String;
+    abstract part componentTopic:LibTwinComponent;
+    abstract attribute externalTopic:ScalarValues::String;
+    abstract attribute useExternalTopic:ScalarValues::Boolean;
+    abstract attribute feedbackTopicType:FeedbackTopicType;
     abstract part def LibTwinStrategyAction{
         abstract attribute redefines name;
         abstract attribute redefines description;
+        abstract attribute redefines external default true;
         abstract attribute redefines pathToCode;
-        abstract attribute redefines strategyType;
+        abstract attribute redefines strategyType default StrategyType::LAMBDA;
+        abstract attribute redefines customPayload;
+        abstract attribute redefines feedbackTopicType default FeedbackTopicType::NOFEEDBACK;
+        abstract part redefines componentTopic;
+        abstract attribute redefines externalTopic;
     }
-
+    
+    
     enum def AttributeDataType{
         STRING;
         DOUBLE;
         INTEGER;
     }
+    
+    enum def FeedbackTopicType{
+        EXTERN;
+        INTERN;
+        NOFEEDBACK;
+    }
     attribute def LibDTAttributes{
-        attribute dataType:AttributeDataType;
+        attribute dataType:AttributeDataType default AttributeDataType::STRING;
     }
 
     attribute def ConstAttributes specializes LibDTAttributes{
         attribute value:ScalarValues::String;
-    }
-    
-    abstract attribute measurement:LibDTAttributes[0..*];
-    port def MeasurePort{
-        abstract attribute redefines measurement;
-    }
-
-
-
-    enum def LibTwinDataBaseTier{
-        HOT;
-        COLD;
     }
 
     enum def LibTwinDataBaseType{
@@ -93,11 +91,7 @@ library package DigitalTwinLibrary{
         TIMESERIES;
     }
 
-    enum def MeasurementInterfaceType{
-        MQTT;
-        REST;
-        GRPC;
-    }
+    
 
     enum def ComparisonOperator{
         GREATER_THAN;
@@ -109,7 +103,6 @@ library package DigitalTwinLibrary{
     }
     enum def StrategyType{
         LAMBDA;
-        CONTAINER;
     }
 
 }

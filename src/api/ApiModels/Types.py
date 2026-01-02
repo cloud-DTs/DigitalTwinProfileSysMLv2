@@ -11,24 +11,13 @@ class MetaTypes(Enum):
     Component = "Component"
     component = "component"
 
-
-    DataBase = "DataBase"
-    database = "database"
-
-
     MeasureInterface = "MeasureInterface"
     measureInterface = "measureInterface"
 
-
-    Measurement = "Measurement"
-    measure = "measure"
-
-   
     ConstAttribute = "ConstAttribute"
     constAttribute = "constAttribute"
     MeasureAttribute = "MeasureAttribute"
     measureAttribute = "measureAttribute"
-
   
     Condition = "Condition"
     condition = "condition"

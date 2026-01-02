@@ -1,4 +1,6 @@
+from datetime import date
 import sys
+from src.TargetModel.twin import Twin
 import src.utils.globals as globals
 import logging
 import os
@@ -41,10 +43,18 @@ def main():
     globals.initDataBase()
     from src.parser import Parser
     parser = Parser()
-    parser.parse()
+    twins:list[Twin] = parser.parse()
+
+    for twin in twins:
+        logging.info(f"Generated Twin Model: {twin.name}")
+        for jsDict in [("config",twin.to_config_dict()),("config_hierarchy",twin.to_hierarchy_dict()),("config_event",twin.to_event_dict()),("config_iot_device",twin.to_iot_device_dict())]:
+            dir_path = "output/"+twin.name+date.today().isoformat()+"/"
+            if not os.path.exists(dir_path):
+                os.makedirs(dir_path)
+            with open(dir_path+jsDict[0]+".json","w") as f:
+                import json
+                json.dump(jsDict[1],f,indent=4)
 
     
-
-
 if __name__ == "__main__":
     main()

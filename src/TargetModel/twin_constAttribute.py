@@ -6,7 +6,20 @@ from typing import Optional
 class ConstAttribute(MeasureAttribute):
     value: str = ""
 
-    def to_dict(self):
-        return super().to_dict() | {
-            "value": self.value
-        }
+    def to_iot_device_dict(self) -> dict:
+        base_dict = super().to_iot_device_dict()
+        base_dict.update({
+            "initValue": self.pythonTypes()(self.value)
+        })
+        return base_dict
+
+
+    def pythonTypes(self):
+        if self.dataType == AttributeDataType.STRING:
+            return str
+        elif self.dataType == AttributeDataType.INTEGER:
+            return int
+        elif self.dataType == AttributeDataType.DOUBLE:
+            return float
+        else:
+            return str  

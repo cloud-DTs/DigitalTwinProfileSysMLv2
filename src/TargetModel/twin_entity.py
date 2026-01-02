@@ -41,3 +41,17 @@ class TwinEntity(TwinModel):
         if self.constComponent is None:
             self.constComponent = ConstComponent(self.id, self.name)
         self.constComponent.add_attribute(constAttribute)
+        self.constComponent.parentEntity = self
+
+    def to_hierarchy_dict(self) ->dict:
+        return {
+            "id": self.id,
+            "type":"entity",
+            "name": self.name,
+            "children": [entity.to_hierarchy_dict() for entity in self.subEntities]
+            +[component.to_hierarchy_dict() for component in self.components]
+            +([self.constComponent.to_hierarchy_dict()] if self.constComponent else [])
+        }
+
+    def to_iot_device_dict(self) -> dict:
+        return [x.to_iot_device_dict() for x in self.subEntities]+[x.to_iot_device_dict() for x in self.components]+([self.constComponent.to_iot_device_dict()] if self.constComponent else [])

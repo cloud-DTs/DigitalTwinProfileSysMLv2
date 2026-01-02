@@ -3,11 +3,11 @@ package MicroGridExample{
     private import MetaModelDigitalTwin::*;
 
     #Component def PAC_Sensor{
-            #measure consumptionPort {
-                #measureAttribute consumption {
+            #measureAttribute consumption {
                     :>> dataType default AttributeDataType::DOUBLE;
-                }
             }
+          
+            attribute test;
          
         }
 
@@ -17,7 +17,6 @@ package MicroGridExample{
             :>> dataType default AttributeDataType::DOUBLE;
         }
         #component sensor:PAC_Sensor;
-        #component ter:PAC_Sensor;
         
     }
 
@@ -25,9 +24,7 @@ package MicroGridExample{
         #constAttribute :>> maxConsumption{
             :>> value default "5.0";
         }
-        #entity test;
         #component batterySensor:>>sensor;
-       
     }
 
 
@@ -50,36 +47,41 @@ package MicroGridExample{
                 #component p14:>>sensor;
             }
         }
-        #DataBase def TestDb{
-            :>> libTwinDataBaseTier default LibTwinDataBaseTier::HOT;
-        }
-       
-        #database TimeSeriesDB:TestDb{
-            :>> libTwinDataBaseType default LibTwinDataBaseType::TIMESERIES;
-        }
-
+        
         #condition CheckBatteryConsumption{
-            attribute :>> operator = ComparisonOperator::GREATER_THAN;
-            in attribute :>> leftOperand = MicroGrid.battery.p12.consumptionPort.consumption;
-            in attribute :>> rightOperand = MicroGrid.battery.maxConsumption;
-            attribute :>> result = true;
+            :>> operator = ComparisonOperator::GREATER_THAN;
+            :>> leftOperand  = MicroGrid.sieVercharge.p13.consumption;
+            :>> rightOperand = MicroGrid.battery.maxConsumption;
             #strategyAction alertAction{
-                attribute :>> name = "Alert3 Action";
-                attribute :>> strategyType = StrategyType::LAMBDA;
-                attribute :>> description = "Alerts when battery consumption is too high";
-                attribute :>> pathToCode = "\\path\\to\\alertFunction";
+                :>> name = "Alert Action";
+                :>> strategyType = StrategyType::LAMBDA;
+                :>> description = "Alerts when battery consumption is too high";
+                :>> pathToCode = "\\path\\to\\alertFunction";
+                :>> external = true;
+                :>> feedbackTopicType = FeedbackTopicType::EXTERN;
+                :>> externalTopic = "EXTERN_TPIC";
+                :>>customPayload = "{\"message\":\"HelloWordl\"}";
+                
+            }
+            #strategyAction alertAction2{
+                :>> name = "Alert Action";
+                :>> strategyType = StrategyType::LAMBDA;
+                :>> description = "Alerts when battery consumption is too high";
+                :>> pathToCode = "";
+                :>> external = false;
+                :>> feedbackTopicType = FeedbackTopicType::INTERN;
+                :>> componentTopic = MicroGrid.battery.p12;
+            }
+            
+            #strategyAction alertAction3{
+                :>> name = "Alert Action";
+                :>> strategyType = StrategyType::LAMBDA;
+                :>> description = "Alerts when battery consumption is too high";
+                :>> pathToCode = "";
+                :>> external = false;
+                
             }
         }
-
-        #MeasureInterface interface def MQTTBroker {
-            attribute :>>type = MeasurementInterfaceType::MQTT;
-        }
-        #measureInterface interface:MQTTBroker connect MicroGrid.sieVercharge.p13.consumptionPort 
-            to target ::> TimeSeriesDB.dataBaseInPort;
-        
-        #measureInterface interface:MQTTBroker connect MicroGrid.kebaP30.p14.consumptionPort 
-            to target ::> TimeSeriesDB.dataBaseInPort;
-
-        
     }
 }
+               

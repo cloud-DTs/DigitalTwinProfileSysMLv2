@@ -19,9 +19,8 @@ class MeasureAttribute(TwinModel):
     dataType: AttributeDataType = AttributeDataType.STRING
     parentComponent: Component = None
 
-    def to_dict(self) -> dict:
+    def to_iot_device_dict(self) -> dict:
         return {
-            "id": self.get_unique_id(),
             "name": self.name,
             "dataType": self.dataType.value
         }
