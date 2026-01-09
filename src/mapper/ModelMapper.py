@@ -24,6 +24,7 @@ import json
 from ..utils import globals
 from ..utils.IdDatabase import IdWrapper
 from ..api.ApiModels.ApiElement import ApiElement, Fields
+
 class MapRoutine():
     T = TypeVar("T", bound=TwinModel)
 
@@ -34,73 +35,63 @@ class MapRoutine():
         pass
 
     def get_repo_model(self, model_type: type, path: list[str]) -> Optional[T]:
-        if model_type in globals.DATABASE.dataBases:
-            wrapper: IdWrapper = globals.DATABASE.dataBases[model_type]
-            return wrapper.get_by_path(path)
-        return None
+        return globals.DATABASE.shared_id_wrapper.get_by_path(path)
 
     def get_sub_meta_types(self) -> list[MetaTypes]:
         return []
     
 
+    def castFeatureValue(self, featureValue: ApiElement, valueType: ApiTypes) -> FeatureValue:
+        if valueType == ApiTypes.FEATUREREFERENCEEXPRESSION:
+            refElement = ApiElement.load_field_from_api(featureValue, Fields.REFERENT)
+            return refElement.get_field(Fields.NAME) if refElement else None
+
+        if valueType == ApiTypes.FEATURECHAINEXPRESSION:
+            memberships = ApiElement.load_list_from_api(featureValue, Fields.MEMBERSHIP)
+
+            for m_element in memberships:
+                if m_element.get_field(Fields.TYPE) == ApiTypes.OWNINGMEMBERSHIP.value:
+                    memberElement = ApiElement.load_field_from_api(m_element, Fields.MEMBERELEMENT)
+
+                    if memberElement:
+                        chainTest = memberElement.get_field(Fields.CHAININGFEATURE)
+                        chain = ApiElement.load_list_from_api(memberElement, Fields.CHAININGFEATURE)
+                        path_ids = [ch.get_field(Fields.ID) for ch in chain]
+                        if  len(chainTest) != len(chain):
+                            raise Exception("Chain length mismatch!")
+                        if len(chain) > 0:
+                            for path_tuple, model in globals.DATABASE.shared_id_wrapper.dataTable.items():
+                                if not isinstance(model, MeasureAttribute) and not isinstance(model, ConstAttribute) and not isinstance(model, Component):
+                                    continue
+                                if list(path_tuple[-len(path_ids):]) == path_ids:
+                                    return model
+
+
+        return featureValue.get_field(Fields.VALUE)
+
     def resolve_attribute(self, element: ApiElement, attr_name: str, valueType: ApiTypes = ApiTypes.LITERALSTRING):
-        all_sub_features = ApiElement.load_list_from_api(element, Fields.OWNEDFEATURE) + \
-                          ApiElement.load_list_from_api(element, Fields.INHERITEDFEATURE)
+        all_sub_features = element.load_list_from_api(Fields.OWNEDFEATURE) + \
+                           element.load_list_from_api(Fields.INHERITEDFEATURE)
 
         for attribute_candidate in all_sub_features:
-            if attribute_candidate.get_field(Fields.NAME) == attr_name:
-            
-                members = ApiElement.load_list_from_api(attribute_candidate, Fields.MEMBER)
-                for featureValue in members:
-                    
-                    if featureValue and featureValue.get_field(Fields.TYPE) == valueType.value:
-                        
+            if self.elmentIsAttr(attribute_candidate, attr_name):
+                def has_value_data(el: ApiElement) -> bool:
+                    members = el.load_list_from_api(Fields.MEMBER)
+                    return any(m.get_field(Fields.TYPE) == valueType.value for m in members)
 
-                        if valueType == ApiTypes.FEATUREREFERENCEEXPRESSION:
-                            refElement = ApiElement.load_field_from_api(featureValue, Fields.REFERENT)
-                            return refElement.get_field(Fields.NAME) if refElement else None
+                found, element_with_value = attribute_candidate.find_in_hierarchy(has_value_data)
 
-                        if valueType == ApiTypes.FEATURECHAINEXPRESSION:
-                            memberships = ApiElement.load_list_from_api(featureValue, Fields.MEMBERSHIP)
-                            
-                            for m_element in memberships:
-                                if m_element.get_field(Fields.TYPE) == ApiTypes.OWNINGMEMBERSHIP.value:
-                                    memberElement = ApiElement.load_field_from_api(m_element, Fields.MEMBERELEMENT)
-                                    
-                                    if memberElement:
-                                        chainTest = memberElement.get_field(Fields.CHAININGFEATURE)
-                                        chain = ApiElement.load_list_from_api(memberElement, Fields.CHAININGFEATURE)
-                                        path_ids = [ch.get_field(Fields.ID) for ch in chain]
-                                        if  len(chainTest) != len(chain):
-                                            raise Exception("Chain length mismatch!")
-                                        if len(chain) > 0:
-                                            if globals.DATABASE.dataBases.get(MeasureAttribute,None):
-                                                for path_tuple, model in globals.DATABASE.dataBases[MeasureAttribute].dataTable.items():
-                                                    if list(path_tuple[-len(path_ids):]) == path_ids:
-                                                        return model
-                                            if globals.DATABASE.dataBases.get(ConstAttribute,None):
-                                                for path_tuple, model in globals.DATABASE.dataBases[ConstAttribute].dataTable.items():
-                                                    if list(path_tuple[-len(path_ids):]) == path_ids:
-                                                        return model
-                                            if globals.DATABASE.dataBases.get(Component,None):
-                                                for path_tuple, model in globals.DATABASE.dataBases[Component].dataTable.items():
-                                                    if list(path_tuple[-len(path_ids):]) == path_ids:
-                                                        return model
-                                                
-                        
-                        return featureValue.get_field(Fields.VALUE)
-
-        redef_refs = element.get_field(Fields.OWNEDREDEFINITION) or []
-        for ref in redef_refs:
-            redef_data_list = queryAnyByIds(element_ids=[ref['@id']], select=['redefinedFeature'], cls=ApiElement)
-            if redef_data_list:
-                parent_feat = ApiElement.load_field_from_api(redef_data_list[0], Fields.REDEFINEDFEATURE)
-                if parent_feat:
-                    result = self.resolve_attribute(parent_feat, attr_name, valueType)
-                    if result is not None:
-                        return result
-
+                if found and element_with_value:
+                    members = element_with_value.load_list_from_api(Fields.MEMBER)
+                    for featureValue in members:
+                        if featureValue and featureValue.get_field(Fields.TYPE) == valueType.value:
+                            return self.castFeatureValue(featureValue, valueType)
         return None
+    
+    def elmentIsAttr(self, element: ApiElement, attr_name: str) -> bool:
+        def checkName(element: ApiElement) -> bool:
+            return element.get_field(Fields.NAME) == attr_name
+        return element.find_in_hierarchy(checkName)[0]
 
             
 
@@ -292,9 +283,11 @@ class ModelMapper():
             if element:
                 self.elementMapper(element, None, self.routines[MetaTypes.Twin], []) 
         
-        return list(globals.DATABASE.dataBases[Twin].dataTable.values())
+        return list(filter(lambda x: isinstance(x, Twin), globals.DATABASE.shared_id_wrapper.dataTable.values()))
 
     def elementMapper(self, element: ApiElement, parent: Optional[ApiElement], routine: MapRoutine, current_path: list[str]):
+        
+        
         my_path = current_path + [element.get_field(Fields.ID)]
         
 
@@ -305,23 +298,33 @@ class ModelMapper():
         allowed_types = routine.get_sub_meta_types()
         all_sub_features = element.load_list_from_api(Fields.OWNEDFEATURE) + \
                           element.load_list_from_api(Fields.INHERITEDFEATURE)
-        
+        subsetted_ids = []
+        for feat in all_sub_features:
+            subset_refs = feat.get_field(Fields.OWNEDSUBSETTING) or []
+            for ref in subset_refs:
+                subset_element = getElementByIdTyped(ApiElement, ref['@id'])
+                if subset_element:
+                    target = subset_element.load_field_from_api(Fields.SUBSETTEDFEATURE)
+                    if target:
+                        subsetted_ids.append(target.id)
         for sub_feature in all_sub_features:
+            if sub_feature.id in subsetted_ids:
+                continue
             for m_type in allowed_types:
                 if self.hasAnnotatedParentWithMetaType(sub_feature, m_type):
                     sub_routine = self.routines.get(m_type)
                     if sub_routine:
                         self.elementMapper(sub_feature, element, sub_routine, my_path)
                     break
-    def hasAnnotatedParentWithMetaType(self, feature: ApiElement, metaType: MetaTypes) -> bool:
-        if self.elementMetaTypeMap.get(feature.get_field(Fields.ID)) == metaType:
-            return True
-        redef_refs = feature.get_field(Fields.OWNEDREDEFINITION) or []
-        for ref in redef_refs:
-            redef_data: ApiElement = queryAnyByIds(element_ids=[ref[Fields.ID.value[0]]], select=['redefinedFeature'],cls=ApiElement)[0]
-            target_ref = ApiElement.load_field_from_api(redef_data, Fields.REDEFINEDFEATURE)
-            if target_ref:
-                if self.hasAnnotatedParentWithMetaType(target_ref, metaType):
-                    return True
-                    
-        return False
+    def hasAnnotatedParentWithMetaType(self, feature: ApiElement, metaType: MetaTypes, visited=None) -> bool:
+
+        def checkMetaType(element:ApiElement) -> bool:
+            if self.elementMetaTypeMap.get(element.id) == metaType:
+                mult = ApiElement.get_field(element, Fields.MULTIPLICITY)
+                if mult is not None and str(mult).strip() != "":
+                    logging.error("Parsing stopped. We do not allow multiplicities at our user defined keywords")
+                    logging.error(f"{ApiElement.get_field(element, Fields.NAME)} has multiplicity: {mult}")
+                    raise Exception("Multiplicity detected at user defined keyword.")
+                return True
+            
+        return feature.find_in_hierarchy(checkMetaType, visited)[0]

@@ -26,13 +26,13 @@ RUN conda config --set always_yes yes --set changeps1 no \
     && conda update -n base -y conda \
     && conda install -n base -y conda-build conda-libmamba-solver \
     && conda config --set solver libmamba
-
+RUN pip install jupyter_client
 # Create sysml environment
 RUN conda create -n sysml python=3.11 -y
 SHELL ["conda", "run", "-n", "sysml", "/bin/bash", "-c"]
 RUN pip install nbformat nbconvert
 # SysML Release download
-ARG RELEASE=2025-02
+ARG RELEASE=2025-04
 RUN wget -q https://github.com/Systems-Modeling/SysML-v2-Release/archive/${RELEASE}.tar.gz -O ${RELEASE}.tar.gz \
     && tar xzf ${RELEASE}.tar.gz \
     && rm ${RELEASE}.tar.gz
@@ -54,6 +54,8 @@ RUN jq --arg api_server "${SYSML_API_SERVER}" \
     > /tmp/kernel.json \
     && mv /tmp/kernel.json ${HOME}/conda/envs/sysml/share/jupyter/kernels/sysml/kernel.json
 
+COPY ["DigitalTwinLibrary.sysml", "/home/sysml/conda/envs/sysml/share/jupyter/kernels/sysml/sysml.library/Domain Libraries/"]
+COPY ["MetaLibrary.sysml", "/home/sysml/conda/envs/sysml/share/jupyter/kernels/sysml/sysml.library/Domain Libraries/"]
 # Go back to top-level folder
 WORKDIR ${HOME}/SysML-v2-Release-${RELEASE}/
 
@@ -88,7 +90,6 @@ RUN find . -name "*.ipynb" -exec jupyter trust {} \;
 EXPOSE 8888
 
 COPY process_sysml.py /home/sysml/process_sysml.py
-COPY DigitalTwinLibrary.sysml /home/sysml/DigitalTwinLibrary.sysml
-COPY MetaLibrary.sysml /home/sysml/MetaLibrary.sysml
 
-ENTRYPOINT ["conda", "run", "-n", "sysml", "python3", "/home/sysml/process_sysml.py"]
+ENTRYPOINT ["/bin/bash", "-c"]
+CMD ["conda run --no-capture-output -n sysml jupyter kernel --kernel=sysml --ip=0.0.0.0"]

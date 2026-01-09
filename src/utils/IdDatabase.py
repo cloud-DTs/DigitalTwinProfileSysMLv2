@@ -1,9 +1,10 @@
 from typing import TypeVar, Type, Generic, List, Tuple, Optional
 import uuid
 from dataclasses import dataclass, field
-
-T = TypeVar("T")
-
+import logging
+from ..TargetModel.twin_model import TwinModel
+T = TypeVar("T" ,bound=TwinModel)
+MY_APP_NAMESPACE = uuid.UUID('6ba7b810-9dad-11d1-80b4-00c04fd430c8')
 @dataclass
 class IdWrapper(Generic[T]):
  
@@ -15,19 +16,34 @@ class IdWrapper(Generic[T]):
         path_tuple = tuple(path_list)
         
         if path_tuple in self.dataTable:
-            existing_model = self.dataTable[path_tuple]
-            return getattr(existing_model, 'id', '')
+            return getattr(self.dataTable[path_tuple], 'id', '')
 
-        custom_uuid = str(uuid.uuid4())
-        
         self.dataTable[path_tuple] = model
-        self.uuidLookup[custom_uuid] = path_tuple
+        name_path_list = self.get_name_path_from_path_list(path_list)
+        name_path_string = "/".join(name_path_list)
         
-        if hasattr(model, 'id'):
-            model.id = custom_uuid
+        custom_uuid = str(uuid.uuid5(MY_APP_NAMESPACE, name_path_string))
+        
+        logging.info(f"Generated UUID {custom_uuid} for path {name_path_string}")
+        
+        self.uuidLookup[custom_uuid] = path_tuple
+       
+        model.id = custom_uuid
             
         return custom_uuid
 
+    def get_name_path_from_path_list(self, path_list: List[str]) -> List[str]:
+
+        name_path = []
+        current_path = []
+        
+        for segment in path_list:
+            current_path.append(segment)
+            model:TwinModel = self.get_by_path(current_path)
+            name_path.append(model.name)
+                
+        return name_path
+    
     def get_by_path(self, path_list: List[str]) -> Optional[T]:
         return self.dataTable.get(tuple(path_list))
     

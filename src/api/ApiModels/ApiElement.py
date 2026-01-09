@@ -1,6 +1,6 @@
 from __future__ import annotations
 from enum import Enum
-from typing import Any, Optional, Dict, List, TypeVar, Type, cast
+from typing import Any, Callable, Optional, Dict, List, Set, TypeVar, Type, cast
 from .ApiTypes import ApiTypes 
 from .Fields import Fields
 
@@ -79,3 +79,39 @@ class ApiElement:
     
     @property
     def name(self) -> str: return self.get_field(Fields.NAME) or ""
+
+
+    def find_in_hierarchy(self, cond: Callable[[ApiElement], bool], visited: Optional[Set[str]] = None) -> tuple[bool, Optional[ApiElement]]:
+        if visited is None:
+            visited = set()
+        
+        if self.id in visited:
+            return False, None
+        visited.add(self.id)
+
+        if cond(self):
+            return True, self
+
+        for ref in (self.get_field(Fields.OWNEDREDEFINITION) or []):
+            redef_obj = self.load_field_from_api_by_id(ref['@id'])
+            if redef_obj:
+                target = redef_obj.load_field_from_api(Fields.REDEFINEDFEATURE)
+                if target:
+                    found, result = target.find_in_hierarchy(cond, visited)
+                    if found:
+                        return True, result
+
+        for ref in (self.get_field(Fields.OWNEDSUBSETTING) or []):
+            subset_obj = self.load_field_from_api_by_id(ref['@id'])
+            if subset_obj:
+                target = subset_obj.load_field_from_api(Fields.SUBSETTEDFEATURE)
+                if target:
+                    found, result = target.find_in_hierarchy(cond, visited)
+                    if found:
+                        return True, result
+
+        return False, None
+
+    def load_field_from_api_by_id(self, target_id: str) -> Optional[ApiElement]:
+        from ..element import getElementByIdTyped
+        return getElementByIdTyped(ApiElement, target_id)

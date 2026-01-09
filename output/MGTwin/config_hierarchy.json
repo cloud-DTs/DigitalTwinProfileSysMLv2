@@ -1,0 +1,82 @@
+[
+    {
+        "id": "5da9ce83-b512-5d34-8772-54a30fc30048",
+        "type": "entity",
+        "name": "MicroGrid",
+        "children": [
+            {
+                "id": "c7d4b318-fe92-55cf-98e5-81aaec9f3bff",
+                "type": "entity",
+                "name": "battery",
+                "children": [
+                    {
+                        "iotDeviceId": "f5360d24-880f-59c8-bcc5-2b0bc11dd6c5",
+                        "type": "component",
+                        "name": "internalInverter"
+                    },
+                    {
+                        "iotDeviceId": "51e09a56-4317-545d-b68a-00526352fee1",
+                        "type": "component",
+                        "name": "p12"
+                    },
+                    {
+                        "iotDeviceId": "c7d4b318-fe92-55cf-98e5-81aaec9f3bffconst_component",
+                        "type": "component",
+                        "name": "batteryconst_component"
+                    }
+                ]
+            },
+            {
+                "id": "f7433708-2fae-547e-aec9-f8a6c8473d7c",
+                "type": "entity",
+                "name": "sieVercharge",
+                "children": [
+                    {
+                        "iotDeviceId": "688ab491-8ab7-56f0-b326-4d7dcb49ae36",
+                        "type": "component",
+                        "name": "p13"
+                    },
+                    {
+                        "iotDeviceId": "f7433708-2fae-547e-aec9-f8a6c8473d7cconst_component",
+                        "type": "component",
+                        "name": "sieVerchargeconst_component"
+                    }
+                ]
+            },
+            {
+                "id": "35d3094d-dd27-5852-a3e5-a2336b9876aa",
+                "type": "entity",
+                "name": "kebaP30",
+                "children": [
+                    {
+                        "iotDeviceId": "4fc12bae-b81a-5e2c-8959-9fa1f8d19e52",
+                        "type": "component",
+                        "name": "p14"
+                    },
+                    {
+                        "iotDeviceId": "35d3094d-dd27-5852-a3e5-a2336b9876aaconst_component",
+                        "type": "component",
+                        "name": "kebaP30const_component"
+                    }
+                ]
+            },
+            {
+                "id": "719ded67-6e43-5d19-a039-556fd37b0355",
+                "type": "entity",
+                "name": "edgeCaseNode",
+                "children": [
+                    {
+                        "iotDeviceId": "7b2fcd21-507e-55d8-b926-dc626a0f47ee",
+                        "type": "component",
+                        "name": "sensor"
+                    },
+                    {
+                        "iotDeviceId": "719ded67-6e43-5d19-a039-556fd37b0355const_component",
+                        "type": "component",
+                        "name": "edgeCaseNodeconst_component"
+                    }
+                ]
+            }
+        ]
+    }
+]

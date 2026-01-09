@@ -1,0 +1,43 @@
+[
+    {
+        "condition": "f7433708-2fae-547e-aec9-f8a6c8473d7c.688ab491-8ab7-56f0-b326-4d7dcb49ae36.73a0542a-099c-5aaa-83bf-2c6aa81079b8 > c7d4b318-fe92-55cf-98e5-81aaec9f3bff.c7d4b318-fe92-55cf-98e5-81aaec9f3bffconst_component.faa4d961-83f1-5ed7-a990-f471756f43c1",
+        "actions": [
+            {
+                "type": "lambda",
+                "pathToCode": "\\path\\to\\alertFunction",
+                "functionName": "alertAction",
+                "external": true,
+                "feedback": {
+                    "type": "mqtt",
+                    "customTopic": {
+                        "topic": "EXTERN_TPIC"
+                    },
+                    "payload": {
+                        "message": "High Consumption Alert"
+                    }
+                }
+            },
+            {
+                "type": "lambda",
+                "functionName": "alertAction2",
+                "external": false,
+                "feedback": {
+                    "type": "mqtt",
+                    "componentTopic": {
+                        "iotDeviceId": "51e09a56-4317-545d-b68a-00526352fee1"
+                    },
+                    "payload": "action-result"
+                }
+            },
+            {
+                "type": "lambda",
+                "functionName": "alertAction3",
+                "external": false,
+                "feedback": {
+                    "type": "mqtt",
+                    "payload": "action-result"
+                }
+            }
+        ]
+    }
+]

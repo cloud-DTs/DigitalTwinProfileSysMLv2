@@ -28,7 +28,7 @@ def getElementById(elementId: str) -> Element | None:
     try:
         element_data = get_raw_element(elementId)
         element = Element.fromDict(element_data)
-        logging.info(f"Element fetched (API/Cache): {element.name} ({element.id})")
+        #logging.info(f"Element fetched (API/Cache): {element.name} ({element.id})")
         return element
     except Exception as e:
         logging.error(f"Error fetching element {elementId}: {e}")
@@ -38,6 +38,7 @@ def getElementByIdTyped(cls: Type[T], elementId: str) -> T | None:
     try:
         element_data = get_raw_element(elementId)
         element = cls.fromDict(element_data)
+        #logging.info(f"Element fetched (API/Cache): {element.name} ({element.id})")
         return element
     except Exception as e:
         logging.error(f"Error fetching typed element {elementId}: {e}")

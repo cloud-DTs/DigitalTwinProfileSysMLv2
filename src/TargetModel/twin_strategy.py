@@ -45,7 +45,7 @@ class Strategy(TwinModel):
         if self.customPaylod:
             feedback["payload"] = self.customPaylod
         else:
-            feedback["payload"] = {"payload": "action-result"}
+            feedback["payload"] = "action-result"
 
         return res
 

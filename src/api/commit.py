@@ -21,6 +21,7 @@ def get_last_commit(project_id:str) -> Commit:
     if not commits:
         logging.error(f"No commits found for project ID: {project_id}")
         return None
+    
     last_commit = max(commits, key=lambda c: datetime.datetime.fromisoformat(c.created))
     logging.debug(f"Last commit ID: {last_commit.id}, Created at: {last_commit.created}")
     return last_commit

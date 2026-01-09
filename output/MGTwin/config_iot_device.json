@@ -1,0 +1,97 @@
+[
+    [
+        [
+            {
+                "id": "f5360d24-880f-59c8-bcc5-2b0bc11dd6c5",
+                "properties": [
+                    {
+                        "name": "consumption",
+                        "dataType": "DOUBLE"
+                    }
+                ]
+            },
+            {
+                "id": "51e09a56-4317-545d-b68a-00526352fee1",
+                "properties": [
+                    {
+                        "name": "consumption",
+                        "dataType": "DOUBLE"
+                    }
+                ]
+            },
+            {
+                "id": "c7d4b318-fe92-55cf-98e5-81aaec9f3bffconst_component",
+                "properties": [
+                    {
+                        "name": "mComp",
+                        "dataType": "DOUBLE",
+                        "initValue": 3.0
+                    }
+                ]
+            }
+        ],
+        [
+            {
+                "id": "688ab491-8ab7-56f0-b326-4d7dcb49ae36",
+                "properties": [
+                    {
+                        "name": "consumption",
+                        "dataType": "DOUBLE"
+                    }
+                ]
+            },
+            {
+                "id": "f7433708-2fae-547e-aec9-f8a6c8473d7cconst_component",
+                "properties": [
+                    {
+                        "name": "maxConsumption",
+                        "dataType": "DOUBLE",
+                        "initValue": 23.0
+                    }
+                ]
+            }
+        ],
+        [
+            {
+                "id": "4fc12bae-b81a-5e2c-8959-9fa1f8d19e52",
+                "properties": [
+                    {
+                        "name": "consumption",
+                        "dataType": "DOUBLE"
+                    }
+                ]
+            },
+            {
+                "id": "35d3094d-dd27-5852-a3e5-a2336b9876aaconst_component",
+                "properties": [
+                    {
+                        "name": "maxConsumption",
+                        "dataType": "DOUBLE",
+                        "initValue": 23.0
+                    }
+                ]
+            }
+        ],
+        [
+            {
+                "id": "7b2fcd21-507e-55d8-b926-dc626a0f47ee",
+                "properties": [
+                    {
+                        "name": "consumption",
+                        "dataType": "DOUBLE"
+                    }
+                ]
+            },
+            {
+                "id": "719ded67-6e43-5d19-a039-556fd37b0355const_component",
+                "properties": [
+                    {
+                        "name": "maxConsumption",
+                        "dataType": "DOUBLE",
+                        "initValue": 23.0
+                    }
+                ]
+            }
+        ]
+    ]
+]

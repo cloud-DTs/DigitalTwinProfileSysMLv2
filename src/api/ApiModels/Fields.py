@@ -150,7 +150,7 @@ class Fields(Enum):
     MEMBERSHIPOWNINGNAMESPACE = ('membershipOwningNamespace', dict, [ApiTypes.ACTORMEMBERSHIP.value, ApiTypes.ELEMENTFILTERMEMBERSHIP.value, ApiTypes.ENDFEATUREMEMBERSHIP.value, ApiTypes.FEATUREMEMBERSHIP.value, ApiTypes.FEATUREVALUE.value, ApiTypes.FRAMEDCONCERNMEMBERSHIP.value, ApiTypes.MEMBERSHIP.value, ApiTypes.OBJECTIVEMEMBERSHIP.value, ApiTypes.OWNINGMEMBERSHIP.value, ApiTypes.PARAMETERMEMBERSHIP.value, ApiTypes.REQUIREMENTCONSTRAINTMEMBERSHIP.value, ApiTypes.REQUIREMENTVERIFICATIONMEMBERSHIP.value, ApiTypes.RESULTEXPRESSIONMEMBERSHIP.value, ApiTypes.RETURNPARAMETERMEMBERSHIP.value, ApiTypes.STAKEHOLDERMEMBERSHIP.value, ApiTypes.STATESUBACTIONMEMBERSHIP.value, ApiTypes.SUBJECTMEMBERSHIP.value, ApiTypes.TRANSITIONFEATUREMEMBERSHIP.value, ApiTypes.VARIANTMEMBERSHIP.value, ApiTypes.VIEWRENDERINGMEMBERSHIP.value])
     METACLASS = ('metaclass', str, [ApiTypes.METADATAFEATURE.value, ApiTypes.METADATAUSAGE.value])
     METADATADEFINITION = ('metadataDefinition', str, [ApiTypes.METADATAUSAGE.value])
-    MULTIPLICITY = ('multiplicity', str, ApiTypes.ALL.value)
+    MULTIPLICITY = ('multiplicity', dict, ApiTypes.ALL.value)
     NAME = ('name', str, ApiTypes.ALL.value)
     NESTEDACTION = ('nestedAction', list, ApiTypes.ALL.value)
     NESTEDALLOCATION = ('nestedAllocation', list, ApiTypes.ALL.value)

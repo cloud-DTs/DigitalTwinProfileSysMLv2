@@ -1,4 +1,3 @@
-version: '2'
 services:
   postgresdbserver:
     image: postgres:9.6.6
@@ -17,17 +16,27 @@ services:
     tty: true
     environment:
       - HOME=/home
-    links:
+    depends_on:
       - postgresdbserver
     ports:
       - "9000:9000"
     restart: always
 
-networks:
-  default:
-    external:
-      name: thenetwork
+  sysml-kernel:
+    image: "sysml.jupyter:latest"
+    tty: true
+    stdin_open: true
+    container_name: sysml-kernel-container
+    environment:
+      - SYSML_API_SERVER=http://sysmlapiserver:9000
+    ports:
+      - "8888:8888"
+    entrypoint: [] 
+    command: >
+      conda run --no-capture-output -n sysml 
+      jupyter kernel --kernel=sysml --ip=0.0.0.0
+    depends_on:
+      - sysmlapiserver
 
 volumes:
   postgresdbserver:
-    external: true
