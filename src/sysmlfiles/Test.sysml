@@ -43,7 +43,7 @@ package MG {
                     :>> value2 = "3.0";
                 }
                 
-                internalInverter :>> inverter; 
+                internalInverter :> inverter; 
                 
                 test :> test;
 
@@ -76,8 +76,8 @@ package MG {
                 :>> name = "Alert Action";
                 :>> strategyType = StrategyType::LAMBDA;
                 :>> description = "Alerts when battery consumption is too high";
-                :>> pathToCode = "\\path\\to\\alertFunction";
-                :>> external = true;
+                :>> pathToCode = "/mnt/c/Users/marco/Git-projects/DigitalTwinProfileSysMLv2/testLambdaFunctions/high-temperature-callback";
+                :>> external = false;
                 :>> feedbackTopicType = FeedbackTopicType::EXTERN;
                 :>> externalTopic = "EXTERN_TPIC";
                 :>> customPayload = "{\"message\":\"High Consumption Alert\"}";
@@ -88,7 +88,7 @@ package MG {
                 :>> strategyType = StrategyType::LAMBDA;
                 :>> description = "Feedback to battery sensor";
                 :>> pathToCode = "";
-                :>> external = false;
+                :>> external = true;
                 :>> feedbackTopicType = FeedbackTopicType::INTERN;
                 :>> componentTopic = MicroGrid.battery.p12;
             }
@@ -96,7 +96,7 @@ package MG {
             #strategyAction alertAction3 {
                 :>> name = "Log Action";
                 :>> strategyType = StrategyType::LAMBDA;
-                :>> external = false;
+                :>> external = true;
             }
         }
     }

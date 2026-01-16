@@ -47,10 +47,15 @@ class Condition(TwinModel):
         leftOperandChain = self.getOperandChain(self.leftOperand)
         rightOperandChain = self.getOperandChain(self.rightOperand)
 
-        return {
-            "condition": f"{leftOperandChain} {opToSymbol(self.operator)} {rightOperandChain}",
-            "actions": [s.to_event_dict() for s in self.strategy]
-        }
+        res = []
+
+        for s in self.strategy:
+            newElem = {
+                "condition": f"{leftOperandChain} {opToSymbol(self.operator)} {rightOperandChain}",
+                "action": s.to_event_dict()
+            }
+            res.append(newElem)
+        return res
     
     def getOperandChain(self,attribute:MeasureAttribute)->str:
         chain = [attribute.parentComponent.parentEntity.id,attribute.parentComponent.id, attribute.id]

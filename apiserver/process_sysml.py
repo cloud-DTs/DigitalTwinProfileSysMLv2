@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 import re
@@ -5,18 +6,18 @@ import time
 from jupyter_client import BlockingKernelClient
 
 def run_task():
-    print("DEBUG: Skript im Container gestartet", file=sys.stderr)
+    logging.debug("DEBUG: Script started in container")
     
     runtime_dir = "/home/sysml/.local/share/jupyter/runtime"
     try:
         conn_files = [os.path.join(runtime_dir, f) for f in os.listdir(runtime_dir) if f.startswith("kernel-")]
         if not conn_files:
-            print("ERROR: Keine kernel-*.json gefunden!", file=sys.stderr)
+            logging.error("No kernel-*.json found!")
             return
         conn_file = max(conn_files, key=os.path.getmtime)
-        print(f"DEBUG: Nutze Connection File: {conn_file}", file=sys.stderr)
+        logging.debug(f"Using connection file: {conn_file}")
     except Exception as e:
-        print(f"ERROR beim Dateizugriff: {e}", file=sys.stderr)
+        logging.error(f"ERROR accessing files: {e}")
         return
 
     client = BlockingKernelClient()
@@ -27,9 +28,9 @@ def run_task():
     client.kernel_info() 
     try:
         client.get_shell_msg(timeout=30)
-        print("Kernel-Verbindung steht (Java-Loop aktiv).")
+        logging.debug("Kernel connection established (Java loop active).")
     except:
-        print("Warte auf Kernel-Initialisierung (Timeout)...", file=sys.stderr)
+        logging.debug("wait for kernel initialization (timeout)...")
 
     project_id = os.environ.get("PROJECT_ID", "")
     project_name = os.environ.get("PUBLISH_GUID", "DefaultProject")
@@ -42,12 +43,12 @@ def run_task():
     commands.append(f'package {safe_name} {{\n{sysml_content}\n}}')
     commands.append(f'%publish -d --project={project_name} {safe_name}')
 
-    print(f"DEBUG: Send {len(commands)} commands Kernel...", file=sys.stderr)
+    logging.debug(f"Send {len(commands)} commands Kernel...")
 
     last_final_id = None 
 
     for i, cmd in enumerate(commands):
-        print(f"DEBUG Sende Befehl an Kernel: {cmd[:50]}...", file=sys.stderr)
+        logging.debug(f"Send command to kernel: {cmd[:50]}...")
         msg_id = client.execute(cmd)
         finished = False
         start_time = time.time()
@@ -58,14 +59,14 @@ def run_task():
                 content = msg.get("content", {})
 
                 if msg_type == 'stream' and 'text' in content:
-                    print(content['text'], end="", flush=True)
+                    logging.debug(content['text'])
 
                 if "data" in content and "text/plain" in content["data"]:
                     data = content["data"]["text/plain"]
                     if i == len(commands) - 1:
                         getSavedText = data.split("Saved to Project")
                         if len(getSavedText) <= 1:
-                            raise Exception("Konnte Projekt-ID nicht extrahieren.")
+                            raise Exception("cant extract project id from kernel output")
                         
                         openParent = getSavedText[1].split("(")
                         projectIdText = openParent[1].split(")")[0]
@@ -77,7 +78,7 @@ def run_task():
                         finished = True
 
                 if time.time() - start_time > 300:
-                    print("ERROR: Timeout", file=sys.stderr)
+                    logging.error("Timeout")
                     finished = True
 
             except Exception as e:

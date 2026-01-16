@@ -37,10 +37,10 @@ class Strategy(TwinModel):
         feedback = res["feedback"]
         
         if self.componentTopic:
-            feedback["componentTopic"] = {"iotDeviceId": self.componentTopic.id}
+            feedback["iotDeviceId"] = self.componentTopic.id
         
         if self.externalTopic:
-            feedback["customTopic"] = {"topic": self.externalTopic}
+            feedback["topic"] = self.externalTopic
             
         if self.customPaylod:
             feedback["payload"] = self.customPaylod

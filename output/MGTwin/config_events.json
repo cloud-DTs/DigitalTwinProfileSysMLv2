@@ -1,0 +1,43 @@
+[
+    {
+        "condition": "mzd2dGWWdntbBdeCzpUZ8v.LcE4QQRx8bR5ZVBgghXbC6.NadbkxUDHw5EGM5Zzj5gWR > dZbP84rWQjLX6jSpAyxLdJ.dZbP84rWQjLX6jSpAyxLdJconst_component.nbugMpE4uNraZ3Ea8z2EoU",
+        "action": {
+            "type": "lambda",
+            "pathToCode": "/mnt/c/Users/marco/Git-projects/DigitalTwinProfileSysMLv2/testLambdaFunctions/high-temperature-callback",
+            "functionName": "alertAction",
+            "external": false,
+            "feedback": {
+                "type": "mqtt",
+                "topic": "EXTERN_TPIC",
+                "payload": {
+                    "message": "High Consumption Alert"
+                }
+            }
+        }
+    },
+    {
+        "condition": "mzd2dGWWdntbBdeCzpUZ8v.LcE4QQRx8bR5ZVBgghXbC6.NadbkxUDHw5EGM5Zzj5gWR > dZbP84rWQjLX6jSpAyxLdJ.dZbP84rWQjLX6jSpAyxLdJconst_component.nbugMpE4uNraZ3Ea8z2EoU",
+        "action": {
+            "type": "lambda",
+            "functionName": "alertAction2",
+            "external": true,
+            "feedback": {
+                "type": "mqtt",
+                "iotDeviceId": "GaNW7B2mByyNdMXN7BfzKn",
+                "payload": "action-result"
+            }
+        }
+    },
+    {
+        "condition": "mzd2dGWWdntbBdeCzpUZ8v.LcE4QQRx8bR5ZVBgghXbC6.NadbkxUDHw5EGM5Zzj5gWR > dZbP84rWQjLX6jSpAyxLdJ.dZbP84rWQjLX6jSpAyxLdJconst_component.nbugMpE4uNraZ3Ea8z2EoU",
+        "action": {
+            "type": "lambda",
+            "functionName": "alertAction3",
+            "external": true,
+            "feedback": {
+                "type": "mqtt",
+                "payload": "action-result"
+            }
+        }
+    }
+]

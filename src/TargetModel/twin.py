@@ -25,10 +25,19 @@ class Twin(TwinModel):
         return [x.to_hierarchy_dict() for x in self.entities]
 
     def to_iot_device_dict(self) -> dict:
-        return [x.to_iot_device_dict() for x in self.entities]
+        result = []
+        for  entity in self.entities:
+            result.extend(entity.to_iot_device_dict())
+        return result
 
-    def to_event_dict(self) -> dict:
-        return [x.to_event_dict() for x in self.strategies]
+    def to_event_dict(self) -> list[dict]:
+        result = []
+
+        for condition in self.strategies:
+            result.extend(condition.to_event_dict())
+
+        return result
+
 
     def to_config_dict(self) -> dict:
         return {

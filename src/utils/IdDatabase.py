@@ -3,6 +3,7 @@ import uuid
 from dataclasses import dataclass, field
 import logging
 from ..TargetModel.twin_model import TwinModel
+import shortuuid
 T = TypeVar("T" ,bound=TwinModel)
 MY_APP_NAMESPACE = uuid.UUID('6ba7b810-9dad-11d1-80b4-00c04fd430c8')
 @dataclass
@@ -23,7 +24,7 @@ class IdWrapper(Generic[T]):
         name_path_string = "/".join(name_path_list)
         
         custom_uuid = str(uuid.uuid5(MY_APP_NAMESPACE, name_path_string))
-        
+        custom_uuid = shortuuid.encode(uuid.UUID(custom_uuid))
         logging.info(f"Generated UUID {custom_uuid} for path {name_path_string}")
         
         self.uuidLookup[custom_uuid] = path_tuple

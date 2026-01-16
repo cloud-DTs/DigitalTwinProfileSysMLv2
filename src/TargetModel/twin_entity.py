@@ -53,5 +53,16 @@ class TwinEntity(TwinModel):
             +([self.constComponent.to_hierarchy_dict()] if self.constComponent else [])
         }
 
-    def to_iot_device_dict(self) -> dict:
-        return [x.to_iot_device_dict() for x in self.subEntities]+[x.to_iot_device_dict() for x in self.components]+([self.constComponent.to_iot_device_dict()] if self.constComponent else [])
+    def to_iot_device_dict(self) -> list[dict]:
+        result = []
+
+        for entity in self.subEntities:
+            result.extend(entity.to_iot_device_dict())
+
+        for component in self.components:
+            result.append(component.to_iot_device_dict())
+
+        if self.constComponent:
+            result.append(self.constComponent.to_iot_device_dict())
+
+        return result

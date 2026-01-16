@@ -2,10 +2,7 @@ services:
   postgresdbserver:
     image: postgres:9.6.6
     restart: always
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=mysecretpassword
-      - POSTGRES_DB=sysml2
+    env_file: ".env"
     ports:
       - "5432:5432"
     volumes:
@@ -14,8 +11,7 @@ services:
   sysmlapiserver:
     image: "sysml.api:latest"
     tty: true
-    environment:
-      - HOME=/home
+    env_file: ".env"
     depends_on:
       - postgresdbserver
     ports:
@@ -31,7 +27,7 @@ services:
       - SYSML_API_SERVER=http://sysmlapiserver:9000
     ports:
       - "8888:8888"
-    entrypoint: [] 
+    entrypoint: []
     command: >
       conda run --no-capture-output -n sysml 
       jupyter kernel --kernel=sysml --ip=0.0.0.0

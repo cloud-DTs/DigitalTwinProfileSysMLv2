@@ -79,8 +79,8 @@ def main():
         output_files = [
             ("config", twin.to_config_dict()),
             ("config_hierarchy", twin.to_hierarchy_dict()),
-            ("config_event", twin.to_event_dict()),
-            ("config_iot_device", twin.to_iot_device_dict())
+            ("config_events", twin.to_event_dict()),
+            ("config_iot_devices", twin.to_iot_device_dict())
         ]
 
         dir_path = f"output/{twin.name}/"

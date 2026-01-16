@@ -1,4 +1,5 @@
 
+from pathlib import Path
 from ..api.ApiModels.MetadataDefiniton import MetadataDefinition
 from ..api.ApiModels.MetadataUsage import MetadataUsage
 from ..api.ApiModels.Types import MetaTypes,ApiTypes
@@ -138,7 +139,7 @@ class EntityRoutine(MapRoutine):
             elif isinstance(parent_obj, TwinEntity):
                 parent_obj.add_subEntity(twinEntity)
         else:
-            logging.warning(f"No parent found for Entity {element.get_field(Fields.NAME)} at path {parent_path}")
+            logging.warning(f"No parent found for Entity {element.get_field(Fields.NAME)} at path {parent_path}. entity is only allowed inside a #twin or #entity!")
             
         return twinEntity
     def get_sub_meta_types(self) -> list[MetaTypes]:
@@ -152,7 +153,7 @@ class ConstAttributeRoutine(MapRoutine):
         entity_obj = self.get_repo_model(TwinEntity, current_path)
 
         if entity_obj is None:
-            logging.error("#constAttribute is ownly allowed inside a Component!")
+            logging.error("#constAttribute is ownly allowed inside a #Entity or #entity!")
             raise Exception(f"Parent with path: {current_path} not found in componentMap for ConstAttribute with id: {element.get_field(Fields.ID)}")
         
         entity_obj.add_constAttribute(constAttribute)
@@ -242,6 +243,12 @@ class StrategyRoutine(MapRoutine):
         strategy.strategyType = StrategyType(str(self.resolve_attribute(element, "strategyType", ApiTypes.FEATUREREFERENCEEXPRESSION)).lower())
         strategy.pathToCode = str(self.resolve_attribute(element, "pathToCode", ApiTypes.LITERALSTRING))
         strategy.external = self.resolve_attribute(element, "external", ApiTypes.LITERALBOOLEAN)
+        if strategy.external is False:
+            path_obj = Path(strategy.pathToCode)
+            if not path_obj.exists() or path_obj.is_file():
+                logging.warning(f"Strategy {element.get_field(Fields.NAME)} has invalid pathToCode: {strategy.pathToCode}")
+            else:
+                strategy.pathToCode = str(path_obj)
         strategy.feedbackTopicType = FeedbackTopicType(str(self.resolve_attribute(element, "feedbackTopicType", ApiTypes.FEATUREREFERENCEEXPRESSION)).upper())
         external_payload = self.resolve_attribute(element, "customPayload", ApiTypes.LITERALSTRING)
         if external_payload:

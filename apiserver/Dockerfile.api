@@ -1,58 +1,14 @@
-FROM eclipse-temurin:11-jdk
-ARG HOME="/home"
+FROM hseeberger/scala-sbt:eclipse-temurin-11.0.14.1_1.6.2_3.1.1
 
-WORKDIR ${HOME}
-# Install required packages for downloading SBT
+USER root
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget \
-    tar \
-    curl \
-    gnupg \
-    dirmngr \
-    ca-certificates \
-    apt-utils \
-    software-properties-common \
     xmlstarlet \
-    && rm -rf /var/lib/apt/lists/*
+    ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 
+WORKDIR /app
 
-ARG SBT_VERSION=1.2.8
-RUN wget -q https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz
-
-## Defining the RELEASE down here ensures that the previous comamnds can
-## be recycled since they're not affected by the release version.
-ARG RELEASE=2025-02
-RUN tar xfz sbt-${SBT_VERSION}.tgz
-RUN wget -q https://github.com/Systems-Modeling/SysML-v2-API-Services/archive/${RELEASE}.tar.gz -O ${RELEASE}.tar.gz \
-    && tar xfz ${RELEASE}.tar.gz --strip-components=0
-RUN tar xfz ${RELEASE}.tar.gz
-
-WORKDIR ${HOME}/SysML-v2-API-Services-${RELEASE}
-RUN ls -la ${HOME}/SysML-v2-API-Services-${RELEASE}
-##
-## Basically this is all taken from
-##     https://github.com/Systems-Modeling/SysML-v2-API-Services
-## and the installation instructions over there.
-##
-RUN ${HOME}/sbt/bin/sbt clean
-RUN ${HOME}/sbt/bin/sbt update
-RUN ${HOME}/sbt/bin/sbt compile
-
-## Play framework complains about the secret key length...
-RUN sed s/key=.whatever./key=\"longersecretnowarnings\"/ -i conf/application.conf
-
-## need to allow the jupyter server access to the API server
-ARG SYSML_API_SERVER="sysmlapiserver:9000"
-RUN echo "\n\nplay.filters.hosts {\n   allowed = [\"${SYSML_API_SERVER}\", \"localhost:9000\"]\n}\n" >> conf/application.conf
-
-## set the database connection information
-ARG DB_SERVER_URL="jdbc:postgresql://postgresdbserver:5432/sysml2"
-ARG DB_USER="postgres"
-ARG DB_PASSWORD="mysecretpassword"
-RUN xmlstarlet ed --inplace -u '_:persistence/_:persistence-unit/_:properties/_:property[@name="javax.persistence.jdbc.url"]/@value' -v ${DB_SERVER_URL} conf/META-INF/persistence.xml \
-    && xmlstarlet ed --inplace -u '_:persistence/_:persistence-unit/_:properties/_:property[@name="javax.persistence.jdbc.user"]/@value' -v ${DB_USER} conf/META-INF/persistence.xml \
-    && xmlstarlet ed --inplace -u '_:persistence/_:persistence-unit/_:properties/_:property[@name="javax.persistence.jdbc.password"]/@value' -v ${DB_PASSWORD} conf/META-INF/persistence.xml \
-    && xmlstarlet ed --inplace -u '_:persistence/_:persistence-unit/_:properties/_:property[@name="hibernate.hbm2ddl.auto"]/@value' -v "update" conf/META-INF/persistence.xml
-
-EXPOSE 9000
-ENTRYPOINT ${HOME}/sbt/bin/sbt run
+COPY docker_api_start.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
