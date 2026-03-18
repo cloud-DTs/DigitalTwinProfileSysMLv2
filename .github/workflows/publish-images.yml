@@ -2,9 +2,11 @@ name: Publish Docker Images
 
 on:
   push:
+    branches: [main]
     paths:
       - 'apiserver/Dockerfile.*'      
       - 'apiserver/docker-compose.yml'
+  workflow_dispatch:  
 
 jobs:
   publish:
