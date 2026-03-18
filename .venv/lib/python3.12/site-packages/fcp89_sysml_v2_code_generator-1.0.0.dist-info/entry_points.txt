@@ -1,0 +1,3 @@
+[console_scripts]
+sysml-code-generator=sysml_code_generator.application:main
+

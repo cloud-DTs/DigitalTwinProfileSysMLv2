@@ -1,0 +1,19 @@
+#include <stdio.h>
+#include "action.h"
+
+{% for function in variables.sub_functions %}
+void {{ function.name }}() {
+    printf("{{ function.name }} called\n");
+}
+{% endfor %}
+
+void {{ variables.main_function.name }}() {
+    {% for function in variables.sub_functions %}
+    {{ function.name }}();
+    {% endfor %}
+}
+
+int main() {
+    {{ variables.main_function.name }}();
+    return 0;
+}

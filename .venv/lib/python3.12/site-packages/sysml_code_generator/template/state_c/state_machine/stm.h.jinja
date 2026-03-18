@@ -1,0 +1,17 @@
+#pragma once
+#ifndef {{ variables.name | upper }}_H
+#define {{ variables.name | upper }}_H
+#include <stdbool.h>
+
+char* getState();
+void next();
+
+{% for variable in variables.variables %}
+extern {{ variable.data_type }} {{ variable.name }};
+{% endfor %}
+
+{% for action in variables.action_names %}
+extern void {{ action }}();
+{% endfor %}
+
+#endif /* {{ variables.name | upper }}_H */

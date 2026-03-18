@@ -1,0 +1,3 @@
+{% for variable in variables.variables %}
+tkvar__{{ variable.name }} = tk.{{ variable.data_type_tk_type }}()
+{% endfor %}

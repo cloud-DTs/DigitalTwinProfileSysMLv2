@@ -1,0 +1,126 @@
+Metadata-Version: 2.1
+Name: fcp89-sysml-v2-code-generator
+Version: 1.0.0
+Summary: Prototype for code generation from SysML v2.
+Home-page: https://gitlab.com/fcp89/sysml-v2-code-generator
+License: MIT-0
+Keywords: SysML,SysML v2,MBSE,Code Generation
+Requires-Python: >=3.9
+Classifier: License :: OSI Approved
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Dist: jinja2 (>=3.1.6,<4.0.0)
+Requires-Dist: requests (>=2.32.3,<3.0.0)
+Project-URL: Repository, https://gitlab.com/fcp89/sysml-v2-code-generator
+Description-Content-Type: text/markdown
+
+***This is a demonstration project. It is not suitable for productive use.***
+
+# SysML v2 Code Generator
+This is a prototype project for code generation from SysML v2 models 
+to demonstrate the potential of code generation in a SysML v2 context.
+
+## Preconditions
+For direct usage:
+- python ^3.9
+- pip
+
+For interactive debugging and development (recommended):
+- poetry
+- professional Python IDE
+
+Optional:
+- SysML v2 Pilot Implementation for generation of own models (JupyterNotebook => JSON/API)
+- *gcc* for compiling generated C files
+- *pyinstaller* for bundling generated gui simulators as standalone executables
+
+## Installation
+as a python package and CLI tool
+```
+pip install fcp89-sysml-v2-code-generator
+```
+
+as development project
+- check out the project with git clone
+- install project dependencies into a python virtual environment with `poetry install`
+
+## Basic Usage
+Within your activated python virtual environment run:
+```
+sysml-code-generator
+```
+This will generate an example in the current working directory.
+
+## Options
+Show options with
+```
+sysml-code-generator -h
+```
+
+Available options (from the help):
+```
+usage: SysML v2 Code Generator [-h] [--json JSON] [--element ELEMENT] [--output OUTPUT] [--build]
+                               [--generator {auto,state_c,state_c_sim_cli,state_c_sim_gui,action_c}]
+                               [--api_url API_URL] [--project_name PROJECT_NAME] [--disable_ssl_verification]
+
+Generate executable code from a SysML v2 model.
+
+options:
+  -h, --help            show this help message and exit
+  --element ELEMENT     Qualified name of the element to build code for.
+  --output OUTPUT       Existing folder for the generated files.
+  --build               Compile the result. May need additional installed software on the system.
+  --generator {auto,state_c,state_c_sim_cli,state_c_sim_gui,action_c}
+                        Generator type.
+
+JSON source:
+  --json JSON           URL of a json file to load the model from.
+
+API source:
+  --api_url API_URL     Base URL of the API to fetch the data from.
+  --project_name PROJECT_NAME
+                        Project name.
+  --disable_ssl_verification
+```
+
+## More Examples
+
+### Running via python in virtual environment
+```
+python application.py
+```
+
+### Generating C code for an exported State Machine
+- Model a SysML v2 State Machine (restrictions apply).
+- Export the package of the statemachine to JSON. (e.g. JupyterNotebook %export MyProject)
+- Run:
+
+```
+sysml-code-generator --json_url MyProject.json --element_qualified_name MyProject::MyStateMachine
+```
+
+
+### Generating simulator for example state machine
+```
+sysml-code-generator --json_url MyProject.json --element_qualified_name MyProject::MyStateMachine
+```
+Including gcc compilation (requires installed gcc):
+```
+sysml-code-generator --generator state_c_sim_cli
+```
+
+## Developing
+
+This project uses dependency injection.
+Instances are assembled in `container.py`.
+
+### Developing a new code generator
+- set up simple example files
+- set up your debugger
+- see sysml_code_generator/generator for existing generators
+- add your generator
+- test and develop
+

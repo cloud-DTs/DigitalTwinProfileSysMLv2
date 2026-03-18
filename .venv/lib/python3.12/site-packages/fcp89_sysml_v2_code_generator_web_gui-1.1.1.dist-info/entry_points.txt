@@ -1,0 +1,3 @@
+[console_scripts]
+sysml-code-generator-web-gui=sysml_code_generator_web_gui.application:main
+

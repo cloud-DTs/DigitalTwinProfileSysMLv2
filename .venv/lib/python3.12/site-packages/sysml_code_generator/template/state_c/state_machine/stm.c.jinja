@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdbool.h>
+#include "{{ variables.name | lower }}.h"
+
+enum state {
+{% for state in variables.states %}
+	{{ state.name }} = {{ state.enum }},
+{% endfor %}
+};
+
+int current_state = {{ variables.initial_state_name }};
+
+char* getState() {
+	switch (current_state) {
+{% for state in variables.states %}
+		case {{ state.name }}:
+			return "{{ state.name }}";
+{% endfor %}
+		default:
+			return "UNKNOWN";
+	}
+}
+
+void next()
+{
+	switch (current_state) {
+{% for state in variables.states %}
+		case {{ state.name }}:
+{% for action in state.actions %}
+{% if action|length %}
+			{{ action }}();
+{% endif %}
+{% endfor %}
+{% for transition in state.conditional_transitions %}
+			{% if loop.first %}if{% else %}else if{% endif %}{% if transition.condition|length %}({{ transition.condition }}){% else %}(true){% endif %}{
+{% for effect in transition.effects %}
+				{{ effect }}();
+{% endfor %}
+				current_state = {{ transition.next }};
+			}
+{% endfor %}
+{% if state.default_transition %}
+{% if state.conditional_transitions|length > 0 %}
+			else {
+{% for effect in state.default_transition.effects %}
+				{{ effect }}();
+{% endfor %}
+				current_state = {{ state.default_transition.next }};
+			}
+{% else %}
+{% for effect in state.default_transition.effects %}
+			{{ effect }}();
+{% endfor %}
+			current_state = {{ state.default_transition.next }};
+{% endif %}
+{% endif %}
+			break;
+{% endfor %}
+	}
+}
+

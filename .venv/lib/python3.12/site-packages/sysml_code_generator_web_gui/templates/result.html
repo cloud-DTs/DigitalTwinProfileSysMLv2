@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SysML v2 code generator prototype - web GUI - result</title>
+</head>
+<body>
+This is a demonstration system.
+<div class="container mt-5">
+    <h1>SysML v2 code generator prototpye web GUI</h1>
+    {% include("navigation.html") %}
+    <h2>Code Generation Result</h2>
+    <a download="generated.zip" class="btn btn-primary btn-lg" href="data:application/zip;base64,{{ zip_base64 }}">DOWNLOAD</a>
+    {% for file in generated_files %}
+    <h3>{{ file.name }}</h3>
+    <div>
+        <pre style="tab-size: 4;"><code>{{ file.data }}</code></pre>
+    </div>
+    {% endfor %}
+</div>
+</body>
+</html>
