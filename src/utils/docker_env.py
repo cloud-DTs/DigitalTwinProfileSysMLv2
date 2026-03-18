@@ -20,7 +20,7 @@ class DockerEnvironment:
         self.network_name = "sysml-network"
         password = (env or {}).get("POSTGRES_PASSWORD") or secrets.token_urlsafe(16)
         self.env = {
-            **self.DEFAULT_ENV,
+            **DEFAULT_ENV,
             "POSTGRES_PASSWORD": password,
             **(env or {})
         }
@@ -42,11 +42,11 @@ class DockerEnvironment:
     def _start_postgres(self):
         self.client.containers.run(
             "postgres:9.6.6",
-            name="sysml-postgres",
+            name="postgresdbserver",
             environment={
-                "POSTGRES_USER": os.getenv("POSTGRES_USER", "sysml"),
-                "POSTGRES_PASSWORD": os.getenv("POSTGRES_PASSWORD", "sysml"),
-                "POSTGRES_DB": os.getenv("POSTGRES_DB", "sysml")
+                "POSTGRES_USER":     self.env["POSTGRES_USER"],  
+            "POSTGRES_PASSWORD": self.env["POSTGRES_PASSWORD"],
+            "POSTGRES_DB":       self.env["POSTGRES_DB"],
             },
             network=self.network_name,
             detach=True,
@@ -58,33 +58,47 @@ class DockerEnvironment:
             "ghcr.io/cloud-dts/sysml-api:latest",
             name="sysmlapiserver",
             ports={"9000/tcp": 9000},
+            restart_policy={"Name": "on-failure", "MaximumRetryCount": 5},
+            environment=self.env, 
             network=self.network_name,
-            detach=True,
-            remove=True
+            tty=True,          
+            stdin_open=True,  
+            detach=True
         )
 
     def _start_kernel(self):
-        self.client.containers.run(
-            "ghcr.io/cloud-dts/sysml-jupyter:latest",
-            name="sysml-kernel-container",
-            environment={"SYSML_API_SERVER": "http://sysmlapiserver:9000"},
-            ports={"8888/tcp": 8888},
-            network=self.network_name,
-            command="conda run --no-capture-output -n sysml jupyter kernel --kernel=sysml --ip=0.0.0.0",
-            detach=True,
-            remove=True
-        )
+        try:
+            self.client.containers.run(
+                "ghcr.io/cloud-dts/sysml-jupyter:latest",
+                name="sysml-kernel-container",
+                environment={"SYSML_API_SERVER": "http://sysmlapiserver:9000"},
+                ports={"8888/tcp": 8888},
+                network=self.network_name,
+                entrypoint=[],   # ← wie im docker-compose: entrypoint: []
+    command="conda run --no-capture-output -n sysml jupyter kernel --kernel=sysml --ip=0.0.0.0",
+                detach=True,
+                tty=True,      
+                stdin_open=True,
+            )
+            print("Kernel started")
+        except Exception as e:
+            print(f"Kernel start failed: {e}")
+            raise
 
     def _wait_for_api(self):
         print("Waiting for API...")
-        for _ in range(30):
+        for i in range(1000):
             try:
                 requests.get(self.host)
-                print("✓ API ready")
+                print("API ready")
                 return
             except:
+                if i % 10 == 0: 
+                    print(f"still waiting... ({i*2}s)")
                 time.sleep(2)
+        
         raise Exception("API did not start")
+        
 
     def send_sysml(self, publish_guid: str, project_id: str, file_paths: list[str]) -> str:
     
@@ -111,10 +125,10 @@ class DockerEnvironment:
         raise Exception("Could not extract project ID")
 
     def __exit__(self, *args):
-        for name in ["sysml-kernel-container", "sysmlapiserver", "sysml-postgres"]:
+        for name in ["sysml-kernel-container", "sysmlapiserver", "postgresdbserver"]:
             try:
                 self.client.containers.get(name).stop()
-                print(f"✓ Stopped {name}")
+                print(f"Stopped {name}")
             except:
                 pass
         try:

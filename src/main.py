@@ -54,7 +54,7 @@ def setup(projectId:str):
 
 
 
-def parseSysmlToTwinClass(sysmlDirPath:str, outputFolder="")->list[Twin]:
+def parseSysmlToTwinClass(sysmlDirPath:str, outputFolder="output")->list[Twin]:
     filepath = sysmlDirPath
     outputFolder = outputFolder
     globals.set_output_folder(outputFolder)
