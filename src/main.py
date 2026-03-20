@@ -3,6 +3,7 @@ import sys
 from src.TargetModel.twin import Twin
 import src.utils.globals as globals
 import logging
+from src.parser import Parser
 import os
 from src.exchangeService import ExchangeService
 import src.api.project as project_api
@@ -51,8 +52,11 @@ def setup(projectId:str):
     logging.info("Setting up the environment...")
     globals.set_project(projectId)
     globals.set_last_commit_id(commit_api.get_last_commit(projectId).id)
-def main():
-    filepath = args_check()
+
+def parseSysmlToTwinClass(sysmlDirPath:str, outputFolder="output")->list[Twin]:
+    filepath = sysmlDirPath
+    outputFolder = outputFolder
+    globals.set_output_folder(outputFolder)
     globals.initPublishGuid()
     publiush_guid = globals.get_publish_guid()
     exchangeService = ExchangeService(upload_script_path=upload_script, file_path=filepath)
@@ -67,10 +71,16 @@ def main():
 
     logging.info("Starting parsing process...")
     globals.initDataBase()
-    from src.parser import Parser
+    
     parser = Parser()
-    twins:list[Twin] = parser.parse()
+    return parser.parse()
+    
 
+
+    
+def main():
+    filepath = args_check()
+    twins = parseSysmlToTwinClass(filepath)
     for twin in twins:
         if len(twin.name) > 10:
             logging.warning(f"Twin Model name '{twin.name}' is longer than 10 characters and will not be considered")

@@ -14,9 +14,9 @@ from ..TargetModel.twin_constAttribute import ConstAttribute
 from ..TargetModel.twin_measureAttribute import MeasureAttribute, AttributeDataType
 from ..TargetModel.twin_condition import Condition,CONDITION_OPERATOR as OperatorType
 from ..TargetModel.twin_strategy import Strategy,StrategyType
-from ..api.ApiModels.Element import Element
-from ..api.ApiModels.Redefiniton import Redefinition
-from ..api.ApiModels.FeatureValue import FeatureValue
+#from ..api.ApiModels.Element import Element
+#from ..api.ApiModels.Redefiniton import Redefinition
+#from ..api.ApiModels.FeatureValue import FeatureValue
 from typing import Optional, TypeVar, Type
 from ..api.element import getElementByIdTyped, getElementById
 import logging
@@ -42,7 +42,7 @@ class MapRoutine():
         return []
     
 
-    def castFeatureValue(self, featureValue: ApiElement, valueType: ApiTypes) -> FeatureValue:
+    def castFeatureValue(self, featureValue: ApiElement, valueType: ApiTypes):
         if valueType == ApiTypes.FEATUREREFERENCEEXPRESSION:
             refElement = ApiElement.load_field_from_api(featureValue, Fields.REFERENT)
             return refElement.get_field(Fields.NAME) if refElement else None
@@ -170,7 +170,7 @@ class ConstAttributeRoutine(MapRoutine):
     def get_sub_meta_types(self) -> list[MetaTypes]:
         return []
 class MeasureAttributeRoutine(MapRoutine):
-    def map(self, element: ApiElement, parent: Element, my_path: list[str], current_path: list[str]) -> MeasureAttribute:
+    def map(self, element: ApiElement, parent: ApiElement, my_path: list[str], current_path: list[str]) -> MeasureAttribute:
         measureAttribute = MeasureAttribute(name=ApiElement.get_field(element, Fields.NAME))
         
         component_obj = self.get_repo_model(Component, current_path)
