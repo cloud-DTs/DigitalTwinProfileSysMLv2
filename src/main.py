@@ -3,16 +3,19 @@ import sys
 from src.TargetModel.twin import Twin
 import src.utils.globals as globals
 import logging
+from src.parser import Parser
 import os
 from src.exchangeService import ExchangeService
 import src.api.project as project_api
 import src.api.commit as commit_api
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 upload_script = os.path.join(BASE_DIR, "uploadSysml.sh")
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
+
 
 def args_check():
     if len(sys.argv) < 2:
@@ -26,33 +29,40 @@ def args_check():
     output_folder = sys.argv[2] if len(sys.argv) > 2 else "output"
     globals.set_output_folder(output_folder)
     return filepath
+
+
 def remove_none_values(data):
     if isinstance(data, list):
-        return [v for v in (remove_none_values(item) for item in data) 
+        return [v for v in (remove_none_values(item) for item in data)
                 if v is not None and v != "" and v != "None"]
-    
+
     elif isinstance(data, dict):
         clean_dict = {}
         for key, value in data.items():
             recursive_value = remove_none_values(value)
-            if (recursive_value is not None and 
-                recursive_value != "" and 
-                recursive_value != "None" and 
-                recursive_value != {}):
+            if (recursive_value is not None and
+                    recursive_value != "" and
+                    recursive_value != "None" and
+                    recursive_value != {}):
                 clean_dict[key] = recursive_value
         return clean_dict if clean_dict else None
-    
+
     else:
         if data == "None" or data is None:
             return None
         return data
 
-def setup(projectId:str):
+
+def setup(projectId: str):
     logging.info("Setting up the environment...")
     globals.set_project(projectId)
     globals.set_last_commit_id(commit_api.get_last_commit(projectId).id)
-def main():
-    filepath = args_check()
+
+
+def parseSysmlToTwinClass(sysmlDirPath: str, outputFolder="output") -> list[Twin]:
+    filepath = sysmlDirPath
+    outputFolder = outputFolder
+    globals.set_output_folder(outputFolder)
     globals.initPublishGuid()
     publiush_guid = globals.get_publish_guid()
     exchangeService = ExchangeService(upload_script_path=upload_script, file_path=filepath)
@@ -67,10 +77,14 @@ def main():
 
     logging.info("Starting parsing process...")
     globals.initDataBase()
-    from src.parser import Parser
-    parser = Parser()
-    twins:list[Twin] = parser.parse()
 
+    parser = Parser()
+    return parser.parse()
+
+
+def main():
+    filepath = args_check()
+    twins = parseSysmlToTwinClass(filepath)
     for twin in twins:
         if len(twin.name) > 10:
             logging.warning(f"Twin Model name '{twin.name}' is longer than 10 characters and will not be considered")
@@ -89,11 +103,11 @@ def main():
 
         for filename, content in output_files:
             clean_content = remove_none_values(content)
-            
+
             with open(os.path.join(dir_path, f"{filename}.json"), "w") as f:
                 import json
                 json.dump(clean_content, f, indent=4)
 
-    
+
 if __name__ == "__main__":
     main()
