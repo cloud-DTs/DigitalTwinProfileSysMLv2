@@ -1,6 +1,5 @@
 aenum==3.1.16
 Arpeggio==2.0.3
-astropy==5.3.4
 blinker==1.9.0
 certifi==2025.11.12
 charset-normalizer==3.4.4
@@ -25,7 +24,6 @@ shortuuid==1.0.13
 six==1.17.0
 syside==0.8.3
 sysml-v2-api-client @ git+https://github.com/Systems-Modeling/SysML-v2-API-Python-Client.git@8971105f0fdac00be2de70c986d2f80dd4e21aac
-sysml2py==0.5.3
 textX==3.1.1
 urllib3==2.6.2
 Werkzeug==3.1.4

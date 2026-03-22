@@ -9,7 +9,7 @@ services:
       - postgresdbserver:/var/lib/postgresql/data
 
   sysmlapiserver:
-    image: "ghcr.io/cloud-dts/sysml-api:latest"
+    image: csba184/sysml.api:latest
     tty: true
     env_file: ".env"
     depends_on:
@@ -19,7 +19,7 @@ services:
     restart: always
 
   sysml-kernel:
-    image: "ghcr.io/cloud-dts/sysml-jupyter:latest"
+    image: csba184/sysml.jupyter:latest
     tty: true
     stdin_open: true
     container_name: sysml-kernel-container
