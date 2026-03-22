@@ -10,7 +10,7 @@ shift 2
 
 SYSML_CONTENT=$(cat "$@")
 
-docker exec -it \
+docker exec -i \
   -e SYSML_CONTENT="$SYSML_CONTENT" \
   -e PUBLISH_GUID="$PUBLISH_GUID" \
   -e PROJECT_ID="$PROJECT_ID" \
