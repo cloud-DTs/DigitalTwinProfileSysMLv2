@@ -14,7 +14,7 @@ source venv/bin/activate
 Start docker
 ```bash
 cd apiserver
-sh build.sh
+docker-compose up -d 
 cd ..
 ```
 ### Execution
