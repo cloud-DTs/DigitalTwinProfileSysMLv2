@@ -23,29 +23,29 @@ class Strategy(TwinModel):
     componentTopic:Component = None
     externalTopic:str = ""
 
-
     def to_event_dict(self) -> dict:
         res = {
             "type": self.strategyType.value,
             "pathToCode": self.pathToCode,
             "functionName": self.name,
             "external": self.external,
-            "feedback": {
-                "type": "mqtt"
-            }
         }
-        feedback = res["feedback"]
-        
-        if self.componentTopic:
-            feedback["iotDeviceId"] = self.componentTopic.id
-        
-        if self.externalTopic:
-            feedback["topic"] = self.externalTopic
-            
-        if self.customPaylod:
-            feedback["payload"] = self.customPaylod
-        else:
-            feedback["payload"] = "action-result"
+
+        if self.feedbackTopicType != FeedbackTopicType.NOFEEDBACK:
+            feedback = {"type": "mqtt"}
+
+            if self.componentTopic:
+                feedback["iotDeviceId"] = self.componentTopic.id
+
+            if self.externalTopic:
+                feedback["topic"] = self.externalTopic
+
+            if self.customPaylod:
+                feedback["payload"] = self.customPaylod
+            else:
+                feedback["payload"] = "action-result"
+
+            res["feedback"] = feedback
 
         return res
 

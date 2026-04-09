@@ -58,7 +58,7 @@ class Condition(TwinModel):
         return res
     
     def getOperandChain(self,attribute:MeasureAttribute)->str:
-        chain = [attribute.parentComponent.parentEntity.id,attribute.parentComponent.id, attribute.id]
+        chain = [attribute.parentComponent.parentEntity.id,attribute.parentComponent.name, attribute.name]
         return ".".join(chain)
     
     
