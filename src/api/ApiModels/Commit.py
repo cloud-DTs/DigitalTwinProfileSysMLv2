@@ -7,6 +7,9 @@ class Commit(CommonElement,CommitOrigin):
     openapi_types["created"] = "str"
     attribute_map["created"] = "created"
 
+    def __init__(self):
+        super().__init__()
+        self._created = None
     @property
     def created(self):
         return self._created

@@ -25,7 +25,7 @@ def initPublishGuid() -> str:
         with open(meta_path, "r") as f:
             meta = json.load(f)
             PUBLISH_GUID = meta.get("publish_guid")
-            PROJECT_ID = meta.get("project_id") # NEU: Lade auch die Project ID
+            PROJECT_ID = meta.get("project_id")
     except (FileNotFoundError, json.JSONDecodeError):
         PUBLISH_GUID = None
         PROJECT_ID = None
@@ -39,29 +39,6 @@ def initPublishGuid() -> str:
             json.dump(meta, f, indent=4)
             f.flush()
             os.fsync(f.fileno())
-def initPublishGuid() -> str:
-    global PUBLISH_GUID
-    meta_path = os.path.join(OUTPUT_FOLDER, "meta.json")
-    
-    try:
-        with open(meta_path, "r") as f:
-            meta = json.load(f)
-            PUBLISH_GUID = meta.get("publish_guid")
-            PROJECT_ID = meta.get("project_id")
-    except (FileNotFoundError, json.JSONDecodeError):
-        PUBLISH_GUID = None
-
-    if PUBLISH_GUID is None:
-        import uuid
-        PUBLISH_GUID = f"Publish{str(uuid.uuid4())}"
-        meta = {"publish_guid": PUBLISH_GUID}
-        
-        with open(meta_path, "w") as f:
-            json.dump(meta, f, indent=4)
-            f.flush()
-            os.fsync(f.fileno())
-            
-    return PUBLISH_GUID
 
 def get_publish_guid()->str:
     global PUBLISH_GUID
