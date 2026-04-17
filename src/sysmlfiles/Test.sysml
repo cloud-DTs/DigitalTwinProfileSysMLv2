@@ -76,7 +76,7 @@ package MG {
                 :>> name = "Alert Action";
                 :>> strategyType = StrategyType::LAMBDA;
                 :>> description = "Alerts when battery consumption is too high";
-                :>> pathToCode = "/mnt/c/Users/marco/Git-projects/DigitalTwinProfileSysMLv2/testLambdaFunctions/high-temperature-callback";
+                :>> pathToCode = "/home/marcocotrotzo/PycharmProjects/digital-twin-manager/lambda_functions/event_actions/high-temperature-callback";
                 :>> external = false;
                 :>> feedbackTopicType = FeedbackTopicType::EXTERN;
                 :>> externalTopic = "EXTERN_TPIC";
