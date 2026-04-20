@@ -1,0 +1,74 @@
+Metadata-Version: 2.1
+Name: fcp89-sysml-v2-code-generator-web-gui
+Version: 1.1.1
+Summary: Web GUI for the SysML v2 code generator prototype.
+Requires-Python: >=3.9
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Classifier: Programming Language :: Python :: 3.10
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Requires-Dist: fcp89-sysml-v2-code-generator (>=1.0.0,<2.0.0)
+Requires-Dist: flask (>=3.1.0,<4.0.0)
+Description-Content-Type: text/markdown
+
+***This is a demonstration project. It is not suitable for productive use.***
+
+# SysML v2 Code Generator Web GUI
+
+This is a prototype project for code generation from SysML v2 models
+to demonstrate the potential of code generation in a SysML v2 context.
+
+## Preconditions
+
+For direct usage:
+
+- python ^3.9
+- pip
+- web browser
+
+For interactive debugging and development (recommended):
+
+- poetry
+- professional Python IDE
+
+For hosting on a server:
+
+- DevOps knowledge
+
+Optional:
+
+- SysML v2 Pilot Implementation for generation of own models (JupyterNotebook => JSON/API)
+
+## Installation
+
+Direct local usage:
+
+```
+pip install fcp89-sysml-v2-code-generator-web-gui
+```
+
+Webserver:
+This is a standard flask application.
+It is possible to host it within a server environment.
+In that case individual steps and modifications are required.
+
+Docker:
+Be aware that this is only a simple integration.
+```
+docker build -t sysml-v2-code-generator-web-gui .
+docker run -p 5000:5000 sysml-v2-code-generator-web-gui
+```
+
+## Basic Usage
+
+Direct usage on local machine:
+
+```
+sysml-code-generator-web-gui
+```
+
+Open http://127.0.0.1:5000 in the browser.
+
+
+

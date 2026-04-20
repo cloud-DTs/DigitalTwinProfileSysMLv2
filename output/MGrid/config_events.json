@@ -1,0 +1,32 @@
+[
+    {
+        "condition": "QTKHwk8cPVK5szLFatR7nz.p13.power == QTKHwk8cPVK5szLFatR7nz.KebaP30const_component.maxConsumption",
+        "action": {
+            "type": "lambda",
+            "pathToCode": "/home/marco/HackathonSysmlv2DemoRepository/digital-twin-manager/lambda_functions/event_actions/high-temperature-callback",
+            "functionName": "stopCharging",
+            "external": false,
+            "feedback": {
+                "type": "mqtt",
+                "iotDeviceId": "WWBRxzKmtE9TFbUFMgFkBz",
+                "payload": "action-result"
+            }
+        }
+    },
+    {
+        "condition": "dcRX7gRVBhYoT5rPU2pVvB.p14.consumption == dcRX7gRVBhYoT5rPU2pVvB.SieVersichargeconst_component.maxConsumption",
+        "action": {
+            "type": "lambda",
+            "pathToCode": "/home/marco/HackathonSysmlv2DemoRepository/digital-twin-manager/lambda_functions/event_actions/high-temperature-callback",
+            "functionName": "stopCharging14",
+            "external": false,
+            "feedback": {
+                "type": "mqtt",
+                "topic": "EXTERN_TPIC",
+                "payload": {
+                    "message": "High Consumption Alert"
+                }
+            }
+        }
+    }
+]

@@ -1,0 +1,71 @@
+import tkinter as tk
+from tkinter import ttk
+import ctypes
+
+print("SysML v2 code generation prototype - state machine simulator.")
+print("")
+print("This is the console window for the simulator GUI.")
+print("You can inspect the log output here.")
+print("")
+
+stm = ctypes.CDLL('./integration.dll')
+stm.next.argtypes = []
+stm.next.restype = None
+stm.getState.argtypes = []
+stm.getState.restype = ctypes.c_char_p
+
+{% include 'state_c/simulator/blocks/stm_variables.jinja' %}
+
+
+def add_checkbox_input(frame, name, variable):
+    checkbox = ttk.Checkbutton(frame, text=name, variable=variable)
+    checkbox.pack(anchor="w", padx=10, pady=5)
+
+
+def on_frame_configure(event):
+    canvas.configure(scrollregion=canvas.bbox("all"))
+
+
+root = tk.Tk()
+root.title("Simulation")
+root.geometry("800x600")
+canvas = tk.Canvas(root)
+scrollbar = ttk.Scrollbar(root, orient="vertical", command=canvas.yview)
+canvas.configure(yscrollcommand=scrollbar.set)
+frame = ttk.Frame(canvas)
+frame.bind("<Configure>", on_frame_configure)
+canvas.create_window((0, 0), window=frame, anchor="nw")
+canvas.pack(side="left", fill="both", expand=True)
+scrollbar.pack(side="right", fill="y")
+
+{% include 'state_c/simulator/blocks/tk_variables.jinja' %}
+
+
+def update_state_label():
+    state = stm.getState()
+    label_var.set(state)
+
+
+def on_button_click():
+{% for variable in variables.variables %}
+    stm.set__{{ variable.name }}(tkvar__{{ variable.name }}.get())
+{% endfor %}
+
+    stm.next()
+    update_state_label()
+
+
+{% include 'state_c/simulator/blocks/add_input.jinja' %}
+
+label = tk.Label(root, text="Current state:")
+label.pack(pady=10)
+label_var = tk.StringVar()
+label_var.set("")
+label = tk.Label(root, textvariable=label_var)
+label.pack(pady=10)
+
+button = tk.Button(root, text="Run Statemachine!", command=on_button_click)
+button.pack(pady=10)
+
+update_state_label()
+root.mainloop()

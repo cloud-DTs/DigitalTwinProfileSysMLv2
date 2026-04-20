@@ -1,0 +1,9 @@
+================================================================================
+
+Syside is owned and licensed by Sensmetry. By installing or using this software,
+you agree to the terms of the Syside License Agreement, available at:
+https://sensmetry.com/terms
+
+================================================================================
+
+Copyright (c) 2025 Sensmetry. All rights reserved.

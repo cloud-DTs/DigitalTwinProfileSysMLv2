@@ -1,9 +1,5 @@
 
 from pathlib import Path
-from ..api.ApiModels.MetadataDefiniton import MetadataDefinition
-from ..api.ApiModels.MetadataUsage import MetadataUsage
-from ..api.ApiModels.Types import MetaTypes,ApiTypes
-from ..api.queries import query,queryElementsByIds,queryAnyByIds,queryAnyByIdsByType,queryByType
 from ..TargetModel.twin import Twin
 from ..TargetModel.twin_component import Component
 from ..TargetModel.twin_database import TwinDatabase,TwinDataBaseTier,TwinDataBaseType
@@ -14,264 +10,194 @@ from ..TargetModel.twin_constAttribute import ConstAttribute
 from ..TargetModel.twin_measureAttribute import MeasureAttribute, AttributeDataType
 from ..TargetModel.twin_condition import Condition,CONDITION_OPERATOR as OperatorType
 from ..TargetModel.twin_strategy import Strategy,StrategyType
-#from ..api.ApiModels.Element import Element
-#from ..api.ApiModels.Redefiniton import Redefinition
-#from ..api.ApiModels.FeatureValue import FeatureValue
-from typing import Optional, TypeVar, Type
-from ..api.element import getElementByIdTyped, getElementById
+from typing import TypeVar, Optional
+from src.api.SysmlTraversal import SysmlTraversal, Field, SysmlElement
+from src.api.ElementRepository import ElementRepository
 import logging
-import sys
+from src.api.MetaTypes import MetaTypes
 import json
-from ..utils import globals
-from ..utils.IdDatabase import IdWrapper
-from ..api.ApiModels.ApiElement import ApiElement, Fields
-
-class MapRoutine():
+import sys
+import src.utils.globals as globals
+class MapRoutine:
     T = TypeVar("T", bound=TwinModel)
-
+ 
     def __init__(self, mapper: 'ModelMapper'):
         self.mapper = mapper
-    
-    def map(self, element: ApiElement, parent: ApiElement, my_path: list[str], current_path: list[str]) -> T:
+ 
+    @property
+    def traversal(self) -> SysmlTraversal:
+        return self.mapper.traversal
+ 
+    def map(self, element: SysmlElement, parent: Optional[SysmlElement], my_path: list, current_path: list) -> TwinModel:
         pass
-
-    def get_repo_model(self, model_type: type, path: list[str]) -> Optional[T]:
+ 
+    def get_repo_model(self, model_type: type, path: list):
         return globals.DATABASE.shared_id_wrapper.get_by_path(path)
-
-    def get_sub_meta_types(self) -> list[MetaTypes]:
+ 
+    def get_sub_meta_types(self) -> list:
         return []
-    
-
-    def castFeatureValue(self, featureValue: ApiElement, valueType: ApiTypes):
-        if valueType == ApiTypes.FEATUREREFERENCEEXPRESSION:
-            refElement = ApiElement.load_field_from_api(featureValue, Fields.REFERENT)
-            return refElement.get_field(Fields.NAME) if refElement else None
-
-        if valueType == ApiTypes.FEATURECHAINEXPRESSION:
-            memberships = ApiElement.load_list_from_api(featureValue, Fields.MEMBERSHIP)
-
-            for m_element in memberships:
-                if m_element.get_field(Fields.TYPE) == ApiTypes.OWNINGMEMBERSHIP.value:
-                    memberElement = ApiElement.load_field_from_api(m_element, Fields.MEMBERELEMENT)
-
-                    if memberElement:
-                        chainTest = memberElement.get_field(Fields.CHAININGFEATURE)
-                        chain = ApiElement.load_list_from_api(memberElement, Fields.CHAININGFEATURE)
-                        path_ids = [ch.get_field(Fields.ID) for ch in chain]
-                        if  len(chainTest) != len(chain):
-                            raise Exception("Chain length mismatch!")
-                        if len(chain) > 0:
-                            for path_tuple, model in globals.DATABASE.shared_id_wrapper.dataTable.items():
-                                if not isinstance(model, MeasureAttribute) and not isinstance(model, ConstAttribute) and not isinstance(model, Component):
-                                    continue
-                                if list(path_tuple[-len(path_ids):]) == path_ids:
-                                    return model
-
-
-        return featureValue.get_field(Fields.VALUE)
-
-    def resolve_attribute(self, element: ApiElement, attr_name: str, valueType: ApiTypes = ApiTypes.LITERALSTRING):
-        all_sub_features = element.load_list_from_api(Fields.OWNEDFEATURE) + \
-                           element.load_list_from_api(Fields.INHERITEDFEATURE)
-
-        for attribute_candidate in all_sub_features:
-            if self.elmentIsAttr(attribute_candidate, attr_name):
-                def has_value_data(el: ApiElement) -> bool:
-                    members = el.load_list_from_api(Fields.MEMBER)
-                    return any(m.get_field(Fields.TYPE) == valueType.value for m in members)
-
-                found, element_with_value = attribute_candidate.find_in_hierarchy(has_value_data)
-
-                if found and element_with_value:
-                    members = element_with_value.load_list_from_api(Fields.MEMBER)
-                    for featureValue in members:
-                        if featureValue and featureValue.get_field(Fields.TYPE) == valueType.value:
-                            return self.castFeatureValue(featureValue, valueType)
-        return None
-    
-    def elmentIsAttr(self, element: ApiElement, attr_name: str) -> bool:
-        def checkName(element: ApiElement) -> bool:
-            return element.get_field(Fields.NAME) == attr_name
-        return element.find_in_hierarchy(checkName)[0]
-
-            
-
+ 
+ 
 class TwinRoutine(MapRoutine):
-    def map(self,element: ApiElement, parent:ApiElement, my_path:list[str], current_path:list[str]) -> Twin:
-        twin = Twin(name=element.get_field(Fields.NAME))
-
-        hotDatabaseType = self.resolve_attribute(element, "hotDatabaseType", ApiTypes.FEATUREREFERENCEEXPRESSION)
-        coldDatabaseType = self.resolve_attribute(element, "coldDataBaseType", ApiTypes.FEATUREREFERENCEEXPRESSION)
-        hotRetentionDays = self.resolve_attribute(element, "hotDatabaseRetentionDays", ApiTypes.LITERALINTEGER)
-        coldRetentionDays = self.resolve_attribute(element, "coldDatabaseRetentionDays", ApiTypes.LITERALINTEGER)
+    def map(self, element: SysmlElement, parent, my_path, current_path) -> Twin:
+        twin = Twin(name=element.name)
+        hotDatabaseType = self.traversal.resolve_enum_ref(element, "hotDatabaseType")
+        coldDatabaseType = self.traversal.resolve_enum_ref(element, "coldDataBaseType")
+        hotRetentionDays = self.traversal.resolve_int(element, "hotDatabaseRetentionDays")
+        coldRetentionDays = self.traversal.resolve_int(element, "coldDatabaseRetentionDays")
+ 
         if hotDatabaseType is None:
-            logging.warning(f"Twin {element.get_field(Fields.NAME)} does not have a hotDatabaseType defined.")
+            logging.warning(f"Twin {element.name} does not have a hotDatabaseType defined.")
         if hotRetentionDays is None:
-            logging.warning(f"Twin {element.get_field(Fields.NAME)} does not have a hotRetentionDays defined.")
-        
-
+            logging.warning(f"Twin {element.name} does not have a hotRetentionDays defined.")
         if coldDatabaseType is None:
-            logging.warning(f"Twin {element.get_field(Fields.NAME)} does not have a coldDatabaseType defined.")
+            logging.warning(f"Twin {element.name} does not have a coldDatabaseType defined.")
         if coldRetentionDays is None:
-            logging.warning(f"Twin {element.get_field(Fields.NAME)} does not have a coldRetentionDays defined.")
-        
-        twin.hotdatabase = TwinDatabase(name=f"{element.get_field(Fields.NAME)}_hotDatabase",id=element.get_field(Fields.ID)+"_hotDatabase")
+            logging.warning(f"Twin {element.name} does not have a coldRetentionDays defined.")
+ 
+        twin.hotdatabase = TwinDatabase(name=f"{element.name}_hotDatabase", id=element.id + "_hotDatabase")
         twin.hotdatabase.dbType = TwinDataBaseType(str(hotDatabaseType).upper()) if hotDatabaseType else TwinDataBaseType.RELATIONAL
         twin.hotdatabase.retentionDays = int(hotRetentionDays) if hotRetentionDays else 30
-        twin.colddatabase = TwinDatabase(name=f"{element.get_field(Fields.NAME)}_coldDatabase",id=element.get_field(Fields.ID)+"_coldDatabase")
+        twin.colddatabase = TwinDatabase(name=f"{element.name}_coldDatabase", id=element.id + "_coldDatabase")
         twin.colddatabase.dbType = TwinDataBaseType(str(coldDatabaseType).upper()) if coldDatabaseType else TwinDataBaseType.RELATIONAL
         twin.colddatabase.retentionDays = int(coldRetentionDays) if coldRetentionDays else 30
-        
         return twin
-    
-    def get_sub_meta_types(self) -> list[MetaTypes]:
-        return [MetaTypes.entity,MetaTypes.condition]
-
+ 
+    def get_sub_meta_types(self):
+        return [MetaTypes.entity, MetaTypes.condition]
+ 
+ 
 class EntityRoutine(MapRoutine):
-    def map(self, element: ApiElement, parent: ApiElement, my_path: list[str], parent_path: list[str]) -> TwinEntity:
-        twinEntity = TwinEntity(name=element.get_field(Fields.NAME))
-        
+    def map(self, element: SysmlElement, parent, my_path, parent_path) -> TwinEntity:
+        twinEntity = TwinEntity(name=element.name)
         parent_obj = self.get_repo_model(Twin, parent_path) or self.get_repo_model(TwinEntity, parent_path)
-        
         if parent_obj:
             if isinstance(parent_obj, Twin):
                 parent_obj.add_entity(twinEntity)
             elif isinstance(parent_obj, TwinEntity):
                 parent_obj.add_subEntity(twinEntity)
         else:
-            logging.warning(f"No parent found for Entity {element.get_field(Fields.NAME)} at path {parent_path}. entity is only allowed inside a #twin or #entity!")
-            
+            logging.warning(f"No parent found for Entity {element.name} at path {parent_path}.")
         return twinEntity
-    def get_sub_meta_types(self) -> list[MetaTypes]:
-        return [MetaTypes.entity,MetaTypes.component,MetaTypes.constAttribute]
-
-
+ 
+    def get_sub_meta_types(self):
+        return [MetaTypes.entity, MetaTypes.component, MetaTypes.constAttribute]
+ 
+ 
 class ConstAttributeRoutine(MapRoutine):
-    def map(self, element: ApiElement, parent: ApiElement, my_path:list[str], current_path:list[str]) -> ConstAttribute:
-        constAttribute = ConstAttribute(name=element.get_field(Fields.NAME), value="")
-        
+    def map(self, element: SysmlElement, parent, my_path, current_path) -> ConstAttribute:
+        constAttribute = ConstAttribute(name=element.name, value="")
         entity_obj = self.get_repo_model(TwinEntity, current_path)
-
         if entity_obj is None:
-            logging.error("#constAttribute is ownly allowed inside a #Entity or #entity!")
-            raise Exception(f"Parent with path: {current_path} not found in componentMap for ConstAttribute with id: {element.get_field(Fields.ID)}")
-        
+            logging.error("#constAttribute is only allowed inside a #Entity or #entity!")
+            raise Exception(f"Parent not found for ConstAttribute {element.id}")
         entity_obj.add_constAttribute(constAttribute)
-        value = self.resolve_attribute(element,"value", ApiTypes.LITERALSTRING)
-        datatype = self.resolve_attribute(element, "dataType", ApiTypes.FEATUREREFERENCEEXPRESSION)
-
+        value = self.traversal.resolve_string(element, "value")
+        datatype = self.traversal.resolve_enum_ref(element, "dataType")
         if value is not None:
             constAttribute.value = value
         if datatype is not None:
             constAttribute.dataType = AttributeDataType(str(datatype).upper())
-
         return constAttribute
-    
-    def get_sub_meta_types(self) -> list[MetaTypes]:
+ 
+    def get_sub_meta_types(self):
         return []
+ 
+ 
 class MeasureAttributeRoutine(MapRoutine):
-    def map(self, element: ApiElement, parent: ApiElement, my_path: list[str], current_path: list[str]) -> MeasureAttribute:
-        measureAttribute = MeasureAttribute(name=ApiElement.get_field(element, Fields.NAME))
-        
+    def map(self, element: SysmlElement, parent, my_path, current_path) -> MeasureAttribute:
+        measureAttribute = MeasureAttribute(name=element.name)
         component_obj = self.get_repo_model(Component, current_path)
         if component_obj is None:
-            logging.error(f"#measureAttribute {element.get_field(Fields.NAME)} is only allowed inside a #component or #Component!")
+            logging.error(f"#measureAttribute {element.name} is only allowed inside a #component or #Component!")
             sys.exit(1)
-        
         component_obj.add_attribute(measureAttribute)
-        datatype = self.resolve_attribute(element, "dataType", ApiTypes.FEATUREREFERENCEEXPRESSION)
+        datatype = self.traversal.resolve_enum_ref(element, "dataType")
         if datatype:
             measureAttribute.dataType = AttributeDataType(str(datatype).upper())
-            
         return measureAttribute
-
-    def get_sub_meta_types(self) -> list[MetaTypes]:
+ 
+    def get_sub_meta_types(self):
         return []
-
+ 
+ 
 class ComponentRoutine(MapRoutine):
-    def map(self, element: ApiElement, parent: ApiElement, my_path: list[str], current_path: list[str]) -> Component:
-        twinComponent = Component(name=element.get_field(Fields.NAME))
-        
+    def map(self, element: SysmlElement, parent, my_path, current_path) -> Component:
+        twinComponent = Component(name=element.name)
         entity_obj = self.get_repo_model(TwinEntity, current_path)
         if entity_obj:
             entity_obj.add_component(twinComponent)
         else:
-            logging.error(f"Parent Entity for Component {element.get_field(Fields.NAME)} not found at {current_path}. #component is only allowed inside a #entity or #Entity!")
+            logging.error(f"Parent Entity for Component {element.name} not found at {current_path}.")
             sys.exit(1)
-            
         return twinComponent
-
-    def get_sub_meta_types(self) -> list[MetaTypes]:
+ 
+    def get_sub_meta_types(self):
         return [MetaTypes.measureAttribute]
-
-
+ 
+ 
 class ConditionRoutine(MapRoutine):
-    def map(self, element: ApiElement, parent: ApiElement, my_path: list[str], current_path: list[str]) -> Condition:
-        condition = Condition(name=element.get_field(Fields.NAME))
-        
+    def map(self, element: SysmlElement, parent, my_path, current_path) -> Condition:
+        condition = Condition(name=element.name)
         parent_twin = self.get_repo_model(Twin, current_path)
         if parent_twin:
             parent_twin.add_condition(condition)
         else:
-            logging.error(f"Parent Twin for Condition {element.get_field(Fields.NAME)} not found at {current_path}. #condition is only allowed inside a #twin!")
+            logging.error(f"Parent Twin for Condition {element.name} not found at {current_path}.")
             sys.exit(1)
-
-        condition.leftOperand = self.resolve_attribute(element, "leftOperand", ApiTypes.FEATURECHAINEXPRESSION)
-        condition.rightOperand = self.resolve_attribute(element, "rightOperand", ApiTypes.FEATURECHAINEXPRESSION)
-        
-        operator = self.resolve_attribute(element, "operator", ApiTypes.FEATUREREFERENCEEXPRESSION)
-        if operator: 
+        condition.leftOperand = self.traversal.resolve_chain_ref(element, "leftOperand")
+        condition.rightOperand = self.traversal.resolve_chain_ref(element, "rightOperand")
+        operator = self.traversal.resolve_enum_ref(element, "operator")
+        if operator:
             condition.operator = OperatorType(str(operator))
-
         return condition
-
-    def get_sub_meta_types(self) -> list[MetaTypes]:
+ 
+    def get_sub_meta_types(self):
         return [MetaTypes.strategyAction]
-
+ 
+ 
 class StrategyRoutine(MapRoutine):
-    def map(self, element: ApiElement, parent: ApiElement, my_path: list[str], current_path: list[str]) -> Strategy:
-        strategy = Strategy(name=element.get_field(Fields.NAME))
-        
-        print("Finding parent Condition for Strategy at name: " + element.get_field(Fields.NAME))
+    def map(self, element: SysmlElement, parent, my_path, current_path) -> Strategy:
+        strategy = Strategy(name=element.name)
         cond_obj = self.get_repo_model(Condition, current_path)
         if cond_obj:
             cond_obj.add_strategy(strategy)
         else:
-            logging.error(f"Parent Condition for Strategy {element.get_field(Fields.NAME)} not found. #strategyAction is only allowed inside a #condition!")
+            logging.error(f"Parent Condition for Strategy {element.name} not found.")
             sys.exit(1)
-
-        strategy.strategyType = StrategyType(str(self.resolve_attribute(element, "strategyType", ApiTypes.FEATUREREFERENCEEXPRESSION)).lower())
-        strategy.pathToCode = str(self.resolve_attribute(element, "pathToCode", ApiTypes.LITERALSTRING))
-        strategy.external = self.resolve_attribute(element, "external", ApiTypes.LITERALBOOLEAN)
+ 
+        strategy.strategyType = StrategyType(str(self.traversal.resolve_enum_ref(element, "strategyType")).lower())
+        strategy.pathToCode = str(self.traversal.resolve_string(element, "pathToCode"))
+        strategy.external = self.traversal.resolve_bool(element, "external")
         if strategy.external is False:
             path_obj = Path(strategy.pathToCode)
             if not path_obj.exists() or path_obj.is_file():
-                logging.warning(f"Strategy {element.get_field(Fields.NAME)} has invalid pathToCode: {strategy.pathToCode}")
+                logging.warning(f"Strategy {element.name} has invalid pathToCode: {strategy.pathToCode}")
             else:
                 strategy.pathToCode = str(path_obj)
-        strategy.feedbackTopicType = FeedbackTopicType(str(self.resolve_attribute(element, "feedbackTopicType", ApiTypes.FEATUREREFERENCEEXPRESSION)).upper())
-        external_payload = self.resolve_attribute(element, "customPayload", ApiTypes.LITERALSTRING)
+        strategy.feedbackTopicType = FeedbackTopicType(str(self.traversal.resolve_enum_ref(element, "feedbackTopicType")).upper())
+        external_payload = self.traversal.resolve_string(element, "customPayload")
         if external_payload:
             try:
                 strategy.customPaylod = json.loads(external_payload)
             except json.JSONDecodeError as e:
-                logging.error(f"Error decoding JSON for customPayload in Strategy {element.get_field(Fields.NAME)}: {e}. CustomPayload needs to be a valid JSON string.")
-                strategy.customPaylod = None
+                logging.error(f"Error decoding customPayload in Strategy {element.name}: {e}")
                 sys.exit(1)
-        
-        strategy.componentTopic = self.resolve_attribute(element, "componentTopic", ApiTypes.FEATURECHAINEXPRESSION)
-       
-        strategy.externalTopic = str(self.resolve_attribute(element, "externalTopic", ApiTypes.LITERALSTRING)) or ""
+        strategy.componentTopic = self.traversal.resolve_chain_ref(element, "componentTopic")
+        strategy.externalTopic = str(self.traversal.resolve_string(element, "externalTopic") or "")
         return strategy
-
-    def get_sub_meta_types(self) -> list[MetaTypes]:
+ 
+    def get_sub_meta_types(self):
         return []
-class ModelMapper():
-    def __init__(self, metaDataDefinitonsMap, metaDataUsageMap, elementMetaTypeMap):
+ 
+ 
+class ModelMapper:
+    def __init__(self, repo: ElementRepository, metaDataDefinitonsMap, metaDataUsageMap, elementMetaTypeMap):
+        self.repo = repo
+        self.traversal = SysmlTraversal(repo)
         self.metaDataDefinitonsMap = metaDataDefinitonsMap
         self.metaDataUsageMap = metaDataUsageMap
         self.elementMetaTypeMap = elementMetaTypeMap
-        self.attributePortComponentMap = {}
         self.routines = {
             MetaTypes.Twin: TwinRoutine(self),
             MetaTypes.entity: EntityRoutine(self),
@@ -281,57 +207,39 @@ class ModelMapper():
             MetaTypes.condition: ConditionRoutine(self),
             MetaTypes.strategyAction: StrategyRoutine(self),
         }
-
+ 
     def mapModel(self) -> list[Twin]:
         for twin_usage in self.metaDataUsageMap.get(MetaTypes.Twin, []):
-            annotated_ref = twin_usage.annotatedElement[0]
-            element = getElementByIdTyped(ApiElement, annotated_ref['@id'])
-            
+            annotated = twin_usage.getField(Field.ANNOTATED_ELEMENT)
+            if not annotated:
+                continue
+            element = self.repo.get(annotated[0]["@id"])
             if element:
-                self.elementMapper(element, None, self.routines[MetaTypes.Twin], []) 
-        
+                self.elementMapper(element, None, self.routines[MetaTypes.Twin], [])
         return list(filter(lambda x: isinstance(x, Twin), globals.DATABASE.shared_id_wrapper.dataTable.values()))
-
-    def elementMapper(self, element: ApiElement, parent: Optional[ApiElement], routine: MapRoutine, current_path: list[str]):
-        
-        
-        my_path = current_path + [element.get_field(Fields.ID)]
-        
-
+ 
+    def elementMapper(self, element: SysmlElement, parent: Optional[SysmlElement], routine: MapRoutine, current_path: list):
+        my_path = current_path + [element.id]
         obj = routine.map(element, parent, my_path, current_path)
         if isinstance(obj, TwinModel):
             globals.DATABASE.add_entry(type(obj), obj, my_path)
-
-        allowed_types = routine.get_sub_meta_types()
-        all_sub_features = element.load_list_from_api(Fields.OWNEDFEATURE) + \
-                          element.load_list_from_api(Fields.INHERITEDFEATURE)
-        subsetted_ids = []
-        for feat in all_sub_features:
-            subset_refs = feat.get_field(Fields.OWNEDSUBSETTING) or []
-            for ref in subset_refs:
-                subset_element = getElementByIdTyped(ApiElement, ref['@id'])
-                if subset_element:
-                    target = subset_element.load_field_from_api(Fields.SUBSETTEDFEATURE)
-                    if target:
-                        subsetted_ids.append(target.id)
-        for sub_feature in all_sub_features:
-            if sub_feature.id in subsetted_ids:
-                continue
-            for m_type in allowed_types:
-                if self.hasAnnotatedParentWithMetaType(sub_feature, m_type):
+ 
+        for sub_feature in self.traversal.get_non_subsetted_features(element):
+            for m_type in routine.get_sub_meta_types():
+                if self._has_meta_type(sub_feature, m_type):
                     sub_routine = self.routines.get(m_type)
                     if sub_routine:
                         self.elementMapper(sub_feature, element, sub_routine, my_path)
                     break
-    def hasAnnotatedParentWithMetaType(self, feature: ApiElement, metaType: MetaTypes, visited=None) -> bool:
-
-        def checkMetaType(element:ApiElement) -> bool:
-            if self.elementMetaTypeMap.get(element.id) == metaType:
-                mult = ApiElement.get_field(element, Fields.MULTIPLICITY)
+ 
+    def _has_meta_type(self, feature: SysmlElement, metaType: MetaTypes, visited=None) -> bool:
+        def check(el: SysmlElement) -> bool:
+            if self.elementMetaTypeMap.get(el.id) == metaType:
+                mult = el.getField(Field.MULTIPLICITY)
                 if mult is not None and str(mult).strip() != "":
-                    logging.error("Parsing stopped. We do not allow multiplicities at our user defined keywords")
-                    logging.error(f"{ApiElement.get_field(element, Fields.NAME)} has multiplicity: {mult}")
+                    logging.error(f"Multiplicity detected at {el.name}")
                     raise Exception("Multiplicity detected at user defined keyword.")
                 return True
-            
-        return feature.find_in_hierarchy(checkMetaType, visited)[0]
+        return self.traversal.find_in_hierarchy(feature, check, visited)[0]
+    
+    

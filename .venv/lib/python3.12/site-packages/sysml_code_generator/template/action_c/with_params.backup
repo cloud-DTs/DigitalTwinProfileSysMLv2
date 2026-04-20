@@ -1,0 +1,16 @@
+#include <stdio.h>
+#include "action.h"
+
+
+
+void callFunctions({% for parameter in variables.main_function.parameters %}{{ parameter.type }} {{ parameter.name }}{% if not loop.last %}, {% endif %}{% endfor %}}}) {
+    {% for function in variables.sub_functions %}
+    {{ function.return_type }} {{ function.name }}__result = {{ function.name }}({% for parameter in function.parameters %}{{ parameter.type }} {{ parameter.name }}{% if not loop.last %}, {% endif %}{% endfor %}}});
+    {% endfor %}
+}
+
+int main() {
+    // Aufruf der Funktion, die die anderen Funktionen aufruft
+    callFunctions();
+    return 0;
+}

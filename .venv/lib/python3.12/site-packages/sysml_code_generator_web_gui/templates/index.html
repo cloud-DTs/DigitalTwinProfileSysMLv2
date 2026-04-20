@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SysML v2 code generator prototype - web GUI</title>
+</head>
+<body>
+This is a demonstration system.
+<div class="container mt-5">
+    <h1>SysML v2 code generator prototpye web GUI</h1>
+    {% include("navigation.html") %}
+    <h2>Generate Code from exported SysML v2 JSON</h2>
+    <form action="{{ url_for('handle_generate_from_json') }}" enctype="multipart/form-data" method="post"
+          target="_blank">
+        <div class="form-group">
+            <label for="qualified_name_input">Qualified name:</label>
+            <input type="text" class="form-control" name="qualified_name" id="qualified_name_input"
+                   value="TrafficLightExample::TrafficLight" required>
+            <small class="form-text text-muted">Qualified name of element to generate code for.</small>
+        </div>
+        <div class="form-group">
+            <label for="generator_type_input">Generator:</label>
+            <select class="form-control" id="generator_type_input" name="generator" required>
+                <option value="auto">Automatic Detection</option>
+                <option value="state_c">Conditional State Machine - C code</option>
+                <option value="state_c_sim_cli">Conditional State Machine - C code - single file CLI simulator</option>
+                <option value="state_c_sim_gui">Conditional State Machine - C code - integration with Windows GUI</option>
+                <option value="action_c">Action Flow - C code - (not implemented)</option>
+            </select>
+            <small class="form-text text-muted">The type of code generator to use. "Automatic Detection" will try find a
+                suitable generator based on the specified SysML element type.</small>
+        </div>
+        <div class="form-group">
+            <label for="file_input">Upload JSON:</label>
+            <input type="file" class="form-control-file" name="file" id="file_input" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Generate</button>
+    </form>
+</div>
+</body>
+</html>
