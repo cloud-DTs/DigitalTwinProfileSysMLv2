@@ -8,6 +8,8 @@ from src.parser import Parser
 import os
 from src.exchangeService import ExchangeService
 
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 upload_script = os.path.join(BASE_DIR, "uploadSysml.sh")
 logging.basicConfig(
@@ -27,7 +29,7 @@ def args_check():
 
     output_folder = sys.argv[2] if len(sys.argv) > 2 else "output"
     globals.set_output_folder(output_folder)
-    return filepath
+    return filepath,output_folder
 
 
 def remove_none_values(data):
@@ -74,7 +76,7 @@ def parseSysmlToTwinClass(sysmlDirPath: str, outputFolder="output") -> list[Twin
 
 
 def main():
-    filepath = args_check()
+    filepath,outputPath = args_check()
     twins = parseSysmlToTwinClass(filepath)
     for twin in twins:
         if len(twin.name) > 10:
@@ -88,7 +90,8 @@ def main():
             ("config_iot_devices", twin.to_iot_device_dict())
         ]
 
-        dir_path = f"output/{twin.name}/"
+        dir_path = f"{outputPath}/{twin.name}/"
+        print("save to", dir_path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 

@@ -8,7 +8,7 @@ PROJECT_ID = None
 LAST_COMMIT_ID = None
 DATABASE = None
 PUBLISH_GUID = None
-OUTPUT_FOLDER = None
+OUTPUT_FOLDER = "output"
 
 def set_output_folder(folder_path:str)->str:
     global OUTPUT_FOLDER
@@ -17,7 +17,9 @@ def set_output_folder(folder_path:str)->str:
         os.makedirs(OUTPUT_FOLDER)
     return OUTPUT_FOLDER
 
-
+def get_output_folder()->str:
+    global OUTPUT_FOLDER
+    return OUTPUT_FOLDER
 def initDataBase()->Repository:
     global DATABASE
     DATABASE = Repository()
