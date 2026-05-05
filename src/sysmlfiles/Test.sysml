@@ -1,103 +1,119 @@
-package MG {
+package MGrid {
 
     private import MetaModelDigitalTwin::*;
 
     #Component def PAC_Sensor {
-        #measureAttribute consumption {
-            :>> dataType default AttributeDataType::DOUBLE;
+        
+    }
+    #Entity def Battery{
+        #component sensor: PAC_Sensor{
+            #measureAttribute totalCapacity {
+                    :>> dataType default AttributeDataType::INTEGER;
+                }
         }
-        attribute test;
+        
     }
 
-    abstract #Entity def AbstractEntity {
+    #Entity def PV{
+        #component sensor: PAC_Sensor{
+            #measureAttribute output{
+                    :>> dataType default AttributeDataType::DOUBLE;
+                }
+            }
+        
+    }
+
+    #Condition def StopCharging{
+        #strategyAction stopCharging :>>strategieActions{
+        :>> name = "StopCharging";
+        :>> strategyType = StrategyType::LAMBDA;
+        :>> pathToCode = "/home/marco/HackathonSysmlv2DemoRepository/digital-twin-manager/lambda_functions/event_actions/high-temperature-callback";
+        :>> external = false;
+        }
+    }
+
+    #Entity def Charger{
         #constAttribute maxConsumption {
-            value2 :>> value default "23.0";
-            :> dataType default AttributeDataType::DOUBLE;
+            :>> value default "50.0";
+            :>>dataType default AttributeDataType::DOUBLE;
         }
-        #component sensor : PAC_Sensor;
+        #component sensor: PAC_Sensor;
     }
 
-    abstract #Entity def IntermediateBattery :> AbstractEntity {
-        #constAttribute :>> maxConsumption {
-            :>> value2 default "10.0";
-        }
-    }
+     
 
-    abstract #Entity def Battery :> IntermediateBattery {
-        #constAttribute :>> maxConsumption {
-            :>> value2 default "5.0";
-        }
-        #component batterySensor :>> sensor;
-        #component inverter : PAC_Sensor;
-        part testNotIncuded;
-    }
+    #Twin def MGrid {
 
- 
-    #Twin def MGTwin {
-        
-        #entity MicroGrid {
-            
+        #entity MicroGrid{
+            #entity battery : Battery{
 
-            #entity battery : Battery {
-                mComp :>> maxConsumption {
-                    :>> value2 = "3.0";
+                p16:>>sensor;
+            }
+            #entity KebaP30 : Charger{
+                :>>maxConsumption {
+                    :>> value default "15.0";
                 }
-                
-                internalInverter :> inverter; 
-                
-                test :> test;
-
-                #component p12 :>> batterySensor;
-            }
-
-            #entity sieVercharge : AbstractEntity {
-                #component p13 :>> sensor;
-            }
-
-            #entity kebaP30 : AbstractEntity {
-                #constAttribute :>> maxConsumption {
+                p13 :>> sensor{
+                    #measureAttribute power {
+                    :>> dataType default AttributeDataType::DOUBLE;
+                    }
                 }
-                #component p14 :>> sensor;
             }
+            #entity SieVersicharge :Charger{
 
+                p14 :>> sensor{
+                    #measureAttribute consumption {
+                    :>> dataType default AttributeDataType::DOUBLE;
+                    }
+                }
+            }
+            #entity SieChargeCC: Charger{
+                p12 :>> sensor{
+                    #measureAttribute consumption {
+                    :>> dataType default AttributeDataType::DOUBLE;
+                    }
+                }
+            }
+            #entity pv : PV{
+                pV1 :>> sensor;
+            }
+            #entity SieChargeD : Charger{
+                p17 :>> sensor{
+                    #measureAttribute consumption {
+                    :>> dataType default AttributeDataType::DOUBLE;
+                    }
+                }
+            }
+            #entity SieCPC20 : Charger{
+                p11 :>> sensor{
+                    #measureAttribute consumption {
+                    :>> dataType default AttributeDataType::DOUBLE;
+                    }
+                }
+            }
+    }
+        :>>hotDatabaseRetentionDays default 30;
+        :>>coldDatabaseRetentionDays default 30;
 
-            #entity edgeCaseNode : AbstractEntity {
-               
+        #condition stopCharging :StopCharging{
+            :>>leftOperand = MicroGrid.KebaP30.p13.power;
+            :>>operator = ComparisonOperator::EQUAL;
+            :>>rightOperand = MicroGrid.KebaP30.maxConsumption;
+            :>>stopCharging{
+                :>> feedbackTopicType = FeedbackTopicType::INTERN;
+                :>> componentTopic = MicroGrid.KebaP30.p13;
             }
         }
-
-        #condition CheckBatteryConsumption {
-            :>> operator = ComparisonOperator::GREATER_THAN;
-            
-            :>> leftOperand  = MicroGrid.sieVercharge.p13.consumption;
-        
-            :>> rightOperand = MicroGrid.battery.mComp;
-            #strategyAction alertAction {
-                :>> name = "Alert Action";
-                :>> strategyType = StrategyType::LAMBDA;
-                :>> description = "Alerts when battery consumption is too high";
-                :>> pathToCode = "/home/marcocotrotzo/PycharmProjects/digital-twin-manager/lambda_functions/event_actions/high-temperature-callback";
-                :>> external = false;
+        #condition stopChargingP14:StopCharging{
+            :>>leftOperand = MicroGrid.SieVersicharge.p14.consumption;
+            :>>operator = ComparisonOperator::EQUAL;
+            :>>rightOperand = MicroGrid.SieVersicharge.maxConsumption;
+            stopCharging14:>>stopCharging{
                 :>> feedbackTopicType = FeedbackTopicType::EXTERN;
                 :>> externalTopic = "EXTERN_TPIC";
                 :>> customPayload = "{\"message\":\"High Consumption Alert\"}";
             }
-
-            #strategyAction alertAction2 {
-                :>> name = "Internal Correction";
-                :>> strategyType = StrategyType::LAMBDA;
-                :>> description = "Feedback to battery sensor";
-                :>> pathToCode = "";
-                :>> external = true;
-                :>> feedbackTopicType = FeedbackTopicType::INTERN;
-                :>> componentTopic = MicroGrid.battery.p12;
-            }
-
-            #strategyAction alertAction3 {
-                :>> name = "Log Action";
-                :>> strategyType = StrategyType::LAMBDA;
-                :>> external = true;
-            }
         }
+    
     }
 }

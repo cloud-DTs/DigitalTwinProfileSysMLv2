@@ -1,0 +1,11 @@
+#pragma once
+#ifndef ACTION_H
+#define ACTION_H
+#include <stdbool.h>
+
+{% import 'action_c/macros/params.jinja' as macros %}
+{% for function in variables.sub_functions %}
+void {{ function.name }}({{ macros.parameters(function.parameters) }});
+{% endfor %}
+
+#endif // ACTION_H

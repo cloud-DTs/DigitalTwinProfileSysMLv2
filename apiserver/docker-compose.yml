@@ -1,23 +1,4 @@
 services:
-  postgresdbserver:
-    image: postgres:9.6.6
-    restart: always
-    env_file: ".env"
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgresdbserver:/var/lib/postgresql/data
-
-  sysmlapiserver:
-    image: csba184/sysml.api:latest
-    tty: true
-    env_file: ".env"
-    depends_on:
-      - postgresdbserver
-    ports:
-      - "9000:9000"
-    restart: always
-
   sysml-kernel:
     image: csba184/sysml.jupyter:latest
     tty: true
@@ -31,8 +12,3 @@ services:
     command: >
       conda run --no-capture-output -n sysml 
       jupyter kernel --kernel=sysml --ip=0.0.0.0
-    depends_on:
-      - sysmlapiserver
-
-volumes:
-  postgresdbserver:

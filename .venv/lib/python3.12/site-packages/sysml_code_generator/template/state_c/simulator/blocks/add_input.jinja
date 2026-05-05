@@ -1,0 +1,9 @@
+{% for variable in variables.variables %}
+{% if variable.data_type_tk_type == "BooleanVar" %}
+add_checkbox_input(frame=frame, name="{{ variable.name }}", variable=tkvar__{{ variable.name }})
+{% elif variable.data_type_tk_type == "DoubleVar" %}
+add_integer_input(frame=frame, name="{{ variable.name }}", variable=tkvar__{{ variable.name }})
+{% elif variable.data_type_tk_type == "IntVar" %}
+add_float_input(frame=frame, name="{{ variable.name }}", variable=tkvar__{{ variable.name }})
+{% endif %}
+{% endfor %}

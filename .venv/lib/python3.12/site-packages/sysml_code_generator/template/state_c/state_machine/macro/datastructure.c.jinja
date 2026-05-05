@@ -1,0 +1,8 @@
+{% import 'state_machine/macro/attribute.c.jinja' as macro %}
+{% macro render_type(type_name, variable_name, variables) %}
+typedef struct {{ type_name }} {
+{% for variable in variables %}
+    {{ macro.render_attribute(variable.data_type, variable.name, "") | indent }}
+{% endfor %}
+} {{ variable_name }};
+{% endmacro %}

@@ -1,0 +1,19 @@
+#include <stdio.h>
+#include <string.h>
+#include "{{ variables.name | lower }}.h"
+
+{% for variable in variables.variables %}
+{{ variable.data_type_c }} {{ variable.name }} = {{ variable.default_value_c }};
+{% endfor %}
+
+{% for variable in variables.variables %}
+void set__{{ variable.name }}({{ variable.data_type_c }} value) {
+    {{ variable.name }} = value;
+}
+{% endfor %}
+
+{% for action in variables.action_names %}
+void {{ action }}() {
+    printf("Performing action {{ action }} ...\n");
+}
+{% endfor %}

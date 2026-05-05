@@ -1,13 +1,14 @@
 from datetime import date
 import sys
+from src.api.ElementRepository import ElementRepository
 from src.TargetModel.twin import Twin
 import src.utils.globals as globals
 import logging
 from src.parser import Parser
 import os
 from src.exchangeService import ExchangeService
-import src.api.project as project_api
-import src.api.commit as commit_api
+
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 upload_script = os.path.join(BASE_DIR, "uploadSysml.sh")
@@ -28,7 +29,7 @@ def args_check():
 
     output_folder = sys.argv[2] if len(sys.argv) > 2 else "output"
     globals.set_output_folder(output_folder)
-    return filepath
+    return filepath,output_folder
 
 
 def remove_none_values(data):
@@ -52,38 +53,30 @@ def remove_none_values(data):
             return None
         return data
 
-
-def setup(projectId: str):
-    logging.info("Setting up the environment...")
-    globals.set_project(projectId)
-    globals.set_last_commit_id(commit_api.get_last_commit(projectId).id)
-
-
 def parseSysmlToTwinClass(sysmlDirPath: str, outputFolder="output") -> list[Twin]:
     filepath = sysmlDirPath
     outputFolder = outputFolder
     globals.set_output_folder(outputFolder)
-    globals.initPublishGuid()
-    publiush_guid = globals.get_publish_guid()
+   
     exchangeService = ExchangeService(upload_script_path=upload_script, file_path=filepath)
     sysml_files = exchangeService.read_sysml_files()
     if not sysml_files:
         logging.error("No .sysml files found in the provided directory.")
         return
-    projectId = exchangeService.sendToApi(publiush_guid, sysml_files)
-    setup(projectId)
-    globals.save_meta_data()
+    path = exchangeService.sendToApi(sysml_files)
     logging.info("Environment setup complete.")
 
-    logging.info("Starting parsing process...")
+    logging.info("Init DataBase...")
     globals.initDataBase()
 
-    parser = Parser()
+    repo = ElementRepository ()
+    repo.parseJson(path)
+    parser = Parser(repo)
     return parser.parse()
 
 
 def main():
-    filepath = args_check()
+    filepath,outputPath = args_check()
     twins = parseSysmlToTwinClass(filepath)
     for twin in twins:
         if len(twin.name) > 10:
@@ -97,7 +90,8 @@ def main():
             ("config_iot_devices", twin.to_iot_device_dict())
         ]
 
-        dir_path = f"output/{twin.name}/"
+        dir_path = f"{outputPath}/{twin.name}/"
+        print("save to", dir_path)
         if not os.path.exists(dir_path):
             os.makedirs(dir_path)
 
