@@ -4,7 +4,7 @@ from ..TargetModel.twin import Twin
 from ..TargetModel.twin_component import Component
 from ..TargetModel.twin_database import TwinDatabase,TwinDataBaseTier,TwinDataBaseType
 from ..TargetModel.twin_entity import TwinEntity
-from ..TargetModel.twin_strategy import FeedbackTopicType
+from ..TargetModel.twin_strategy import ActionOutputParameterType, FeedbackTopicType,ActionInputParameter
 from ..TargetModel.twin_model import TwinModel
 from ..TargetModel.twin_constAttribute import ConstAttribute
 from ..TargetModel.twin_measureAttribute import MeasureAttribute, AttributeDataType
@@ -185,6 +185,25 @@ class StrategyRoutine(MapRoutine):
                 sys.exit(1)
         strategy.componentTopic = self.traversal.resolve_chain_ref(element, "componentTopic")
         strategy.externalTopic = str(self.traversal.resolve_string(element, "externalTopic") or "")
+
+        inputParameterNames = self.traversal.getAllParametersByParent(element, "inputParameters")
+        outputParameterNames = self.traversal.getAllParametersByParent(element, "outputParameters")
+        for param in inputParameterNames:
+            attribute = self.traversal.resolve_chain_ref(element, param.name)
+            if attribute is None:
+                continue
+            custom_name = param.name if param.name != "inputParameters" else attribute.name
+            strategy.inputParameters.append(ActionInputParameter(customName=custom_name, attribute=attribute))
+        for param_name in outputParameterNames:
+            output_type = self.traversal.resolve_enum_ref(element, param_name.name)
+            if output_type is None:
+                continue
+            if param_name.name == "outputParameters":
+                logging.warning(f"Strategy {element.name} has an output parameter with no name. Skipping.")
+                continue
+            strategy.outputParameters.append(ActionOutputParameterType(name=param_name.name, type=output_type))
+
+
         return strategy
  
     def get_sub_meta_types(self):

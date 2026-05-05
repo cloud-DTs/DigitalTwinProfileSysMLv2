@@ -12,6 +12,13 @@ class ConstAttribute(MeasureAttribute):
             "initValue": self.pythonTypes()(self.value)
         })
         return base_dict
+    
+    def to_event_dict(self) -> dict:
+        base_dict = super().to_event_dict()
+        base_dict.update({
+            "value": self.pythonTypes()(self.value)
+        })
+        return base_dict
 
 
     def pythonTypes(self):

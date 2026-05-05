@@ -1,3 +1,5 @@
+import logging
+
 from .ElementRepository import ElementRepository
 from .SysmlElement import SysmlElement, Field, SysmlType
 from src.TargetModel.twin import Twin
@@ -126,4 +128,17 @@ class SysmlTraversal:
                                         return model
  
         return element.getField(Field.VALUE)
- 
+
+    def getAllParametersByParent(self,element: SysmlElement, parentName:str) -> list[SysmlElement]:
+        logging.info(f"Getting all parameters for parent: {parentName}")
+        res = []
+        for candidate in self.get_children(element):
+           
+            def has_name(el: SysmlElement) -> bool:
+                return el.name == parentName
+            found, _ = self.find_in_hierarchy(candidate, has_name)
+            if not found:
+                continue
+            logging.info(f"Found candidate {candidate.name} for parentName: {parentName}")
+            res.append(candidate)
+        return res

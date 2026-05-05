@@ -24,3 +24,8 @@ class MeasureAttribute(TwinModel):
             "name": self.name,
             "dataType": self.dataType.value
         }
+    def to_event_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "dataType": self.dataType.value
+        }
