@@ -64,7 +64,6 @@ library package DigitalTwinLibrary{
         abstract attribute redefines external default true;
         abstract attribute redefines pathToCode;
         abstract attribute redefines inputParameters;
-        abstract attribute redefines constInputParameters;
         abstract attribute redefines outputParameters;
         abstract attribute redefines strategyType default StrategyType::LAMBDA;
         abstract attribute redefines customPayload;
