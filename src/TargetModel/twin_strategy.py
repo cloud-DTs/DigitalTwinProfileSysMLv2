@@ -40,7 +40,7 @@ class Strategy(TwinModel):
     pathToCode: str = ""
     external: bool = False
     feedbackTopicType: FeedbackTopicType = FeedbackTopicType.NOFEEDBACK
-    customPayload: Optional[dict] = None  # fixed typo: customPaylod -> customPayload
+    customPayload: Optional[dict] = None
     componentTopic: Optional[Component] = None
     externalTopic: str = ""
     inputParameters: list[ActionInputParameter] = field(default_factory=list)

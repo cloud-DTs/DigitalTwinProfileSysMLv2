@@ -27,7 +27,7 @@ package MGrid {
         #strategyAction stopCharging :>>strategieActions{
         :>> name = "StopCharging";
         :>> strategyType = StrategyType::LAMBDA;
-        :>> pathToCode = "/home/marcocotrotzo/PycharmProjects/SymlCOnv/DigitalTwinProfileSysMLv2/testLambdaFunctions";
+        :>> pathToCode = "/home/marcocotrotzo/PycharmProjects/SymlCOnv/DigitalTwinProfileSysMLv2/testLambdaFunctions/high-temperature-callback";
         :>> external = false;
        
     }
@@ -113,12 +113,11 @@ package MGrid {
                 :>> externalTopic = "EXTERN_TPIC";
                 :>> customPayload = "{\"message\":\"High Consumption Alert\"}";
                 test1 :>> inputParameters = MicroGrid.SieVersicharge.p14.consumption;
-                :>> inputParameters = MicroGrid.KebaP30.p13.power;
                 test2 :>> inputParameters = MicroGrid.SieVersicharge.maxConsumption;
                 test3 :>> outputParameters = AttributeDataType::STRING;
                 test6 :>> outputParameters = AttributeDataType::DOUBLE;
                 :>>outputParameters = AttributeDataType::DOUBLE;
-                test7 :> inputParameters = MicroGrid.SieVersicharge.maxConsumption;
+                test7 :>> inputParameters = MicroGrid.SieVersicharge.maxConsumption;
                 
         }
             }

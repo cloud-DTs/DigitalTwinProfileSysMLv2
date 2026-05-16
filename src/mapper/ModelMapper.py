@@ -179,7 +179,7 @@ class StrategyRoutine(MapRoutine):
         external_payload = self.traversal.resolve_string(element, "customPayload")
         if external_payload:
             try:
-                strategy.customPaylod = json.loads(external_payload)
+                strategy.customPayload = json.loads(external_payload)
             except json.JSONDecodeError as e:
                 logging.error(f"Error decoding customPayload in Strategy {element.name}: {e}")
                 sys.exit(1)
@@ -188,18 +188,24 @@ class StrategyRoutine(MapRoutine):
 
         inputParameterNames = self.traversal.getAllParametersByParent(element, "inputParameters")
         outputParameterNames = self.traversal.getAllParametersByParent(element, "outputParameters")
+        
         for param in inputParameterNames:
+            if param.name == "inputParameters":
+                continue
+
             attribute = self.traversal.resolve_chain_ref(element, param.name)
             if attribute is None:
                 continue
+            print(f"Resolved input parameter {param.name}")
             custom_name = param.name if param.name != "inputParameters" else attribute.name
+            if param.name == "inputParameters":
+                print(attribute.name)
             strategy.inputParameters.append(ActionInputParameter(customName=custom_name, attribute=attribute))
         for param_name in outputParameterNames:
             output_type = self.traversal.resolve_enum_ref(element, param_name.name)
             if output_type is None:
                 continue
             if param_name.name == "outputParameters":
-                logging.warning(f"Strategy {element.name} has an output parameter with no name. Skipping.")
                 continue
             strategy.outputParameters.append(ActionOutputParameterType(name=param_name.name, type=output_type))
 

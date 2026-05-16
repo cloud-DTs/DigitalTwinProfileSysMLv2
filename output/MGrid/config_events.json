@@ -3,7 +3,7 @@
         "condition": "QTKHwk8cPVK5szLFatR7nz.p13.power == QTKHwk8cPVK5szLFatR7nz.KebaP30const_component.maxConsumption",
         "action": {
             "type": "lambda",
-            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/DigitalTwinProfileSysMLv2/testLambdaFunctions",
+            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/DigitalTwinProfileSysMLv2/testLambdaFunctions/high-temperature-callback",
             "functionName": "stopCharging",
             "external": false,
             "feedback": {
@@ -19,22 +19,19 @@
         "condition": "dcRX7gRVBhYoT5rPU2pVvB.p14.consumption == dcRX7gRVBhYoT5rPU2pVvB.SieVersichargeconst_component.maxConsumption",
         "action": {
             "type": "lambda",
-            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/DigitalTwinProfileSysMLv2/testLambdaFunctions",
+            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/DigitalTwinProfileSysMLv2/testLambdaFunctions/high-temperature-callback",
             "functionName": "stopCharging14",
             "external": false,
             "feedback": {
                 "type": "mqtt",
                 "topic": "EXTERN_TPIC",
-                "payload": "action-result"
+                "payload": {
+                    "message": "High Consumption Alert"
+                }
             },
             "inputParameters": [
                 {
                     "name": "test1",
-                    "dataType": "DOUBLE",
-                    "id": "dcRX7gRVBhYoT5rPU2pVvB.p14.consumption"
-                },
-                {
-                    "name": "consumption",
                     "dataType": "DOUBLE",
                     "id": "dcRX7gRVBhYoT5rPU2pVvB.p14.consumption"
                 },
