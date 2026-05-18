@@ -1,0 +1,26 @@
+[
+    {
+        "id": "PfTCShbXZeW2RanKaCxv3L",
+        "type": "entity",
+        "name": "MicroGrid",
+        "children": [
+            {
+                "id": "nMVb4HLcSgCAWnTayW5xUs",
+                "type": "entity",
+                "name": "KebaP30",
+                "children": [
+                    {
+                        "iotDeviceId": "UBRjjaUFuBjXCoLNUxDsSb",
+                        "type": "component",
+                        "name": "p13"
+                    },
+                    {
+                        "iotDeviceId": "nMVb4HLcSgCAWnTayW5xUsconst_component",
+                        "type": "component",
+                        "name": "KebaP30const_component"
+                    }
+                ]
+            }
+        ]
+    }
+]

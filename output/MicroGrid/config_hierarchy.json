@@ -1,0 +1,33 @@
+[
+    {
+        "id": "QghBgY45QdKCSv5BP9hnbo",
+        "type": "entity",
+        "name": "Dummy",
+        "children": [
+            {
+                "id": "2X2Z9jDVRDxeDwMeJhjGr3",
+                "type": "entity",
+                "name": "MicroGrid",
+                "children": [
+                    {
+                        "id": "QjzJAwHpZ3iGwT8SACQu2m",
+                        "type": "entity",
+                        "name": "KebaP30",
+                        "children": [
+                            {
+                                "iotDeviceId": "Ysm5rmrd75qiqoVJrC3min",
+                                "type": "component",
+                                "name": "p13"
+                            },
+                            {
+                                "iotDeviceId": "QjzJAwHpZ3iGwT8SACQu2mconst_component",
+                                "type": "component",
+                                "name": "KebaP30const_component"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

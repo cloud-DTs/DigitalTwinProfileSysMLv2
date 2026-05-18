@@ -1,0 +1,21 @@
+[
+    {
+        "id": "UBRjjaUFuBjXCoLNUxDsSb",
+        "properties": [
+            {
+                "name": "power",
+                "dataType": "DOUBLE"
+            }
+        ]
+    },
+    {
+        "id": "nMVb4HLcSgCAWnTayW5xUsconst_component",
+        "properties": [
+            {
+                "name": "maxConsumption",
+                "dataType": "DOUBLE",
+                "initValue": 15.0
+            }
+        ]
+    }
+]

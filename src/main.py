@@ -18,12 +18,7 @@ logging.basicConfig(
 )
 
 
-def fun(test1,test2,randomSeed=23):
 
-    
-    print(test1)
-    print(test2)
-    print(test3)
 def args_check():
     if len(sys.argv) < 2:
         logging.error("Usage: python main.py <path_to_sysml_directory>")
