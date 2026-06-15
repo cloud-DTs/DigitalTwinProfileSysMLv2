@@ -79,6 +79,10 @@ library package DigitalTwinLibrary{
         STRING;
         DOUBLE;
         INTEGER;
+        VECTOR_DOUBLE;
+        VECTOR_INTEGER;
+        VECTOR_STRING;
+
     }
     
     enum def FeedbackTopicType{
