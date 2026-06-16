@@ -13,6 +13,9 @@ class AttributeDataType(Enum):
     STRING = "STRING"
     INTEGER = "INTEGER"
     DOUBLE = "DOUBLE"
+    VECTOR_DOUBLE = "VECTOR_DOUBLE"
+    VECTOR_INTEGER = "VECTOR_INTEGER"
+    VECTOR_STRING = "VECTOR_STRING"
 
 @dataclass
 class MeasureAttribute(TwinModel):

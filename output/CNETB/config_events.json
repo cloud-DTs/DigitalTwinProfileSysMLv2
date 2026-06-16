@@ -1,0 +1,43 @@
+[
+    {
+        "condition": "MghsU4QqcbzT6qu5JE4Ri2.Beam1const_component.dummyInt == MghsU4QqcbzT6qu5JE4Ri2.Beam1const_component.dummyInt",
+        "action": {
+            "type": "lambda",
+            "pathToCode": "C:\\Users\\marco\\Git-projects\\CNET_Bridge_SysMLV2\\rainflowCounting",
+            "functionName": "rainFlowCounting",
+            "external": false,
+            "inputParameters": [
+                {
+                    "name": "rainflowIn",
+                    "dataType": "DOUBLE",
+                    "id": "VT22xyP8jbfw6kFmbtiCg7.node.rainflowCounting"
+                },
+                {
+                    "name": "initialDamageIn",
+                    "dataType": "DOUBLE",
+                    "value": 0.0,
+                    "id": "MghsU4QqcbzT6qu5JE4Ri2.Beam1const_component.initialDamage"
+                }
+            ],
+            "outputParameters": []
+        }
+    },
+    {
+        "condition": "MghsU4QqcbzT6qu5JE4Ri2.Beam1const_component.dummyInt == MghsU4QqcbzT6qu5JE4Ri2.Beam1const_component.dummyInt",
+        "action": {
+            "type": "lambda",
+            "pathToCode": "C:\\Users\\marco\\Git-projects\\CNET_Bridge_SysMLV2\\rainflowForecast",
+            "functionName": "rainFlowForecast",
+            "external": false,
+            "inputParameters": [
+                {
+                    "name": "initialDamageIn",
+                    "dataType": "DOUBLE",
+                    "value": 0.0,
+                    "id": "MghsU4QqcbzT6qu5JE4Ri2.Beam1const_component.initialDamage"
+                }
+            ],
+            "outputParameters": []
+        }
+    }
+]
