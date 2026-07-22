@@ -168,9 +168,11 @@ The error text from the kernel **is already in `result.stdout`** inside `exchang
 
 > [!IMPORTANT]
 > **Traceback detail level**: The SysML kernel's error traceback can include ANSI escape codes (color formatting from Jupyter). Should I strip those out for clean console output, or leave them as-is?
+-> strip those out (since the errors are feed backed to sysml generating LLM)
 
 > [!NOTE]
-> **Docker image rebuild**: The change to `process_sysml.py` lives inside the Docker image. After merging, you'll need to rebuild the image (`docker build -f Dockerfile.jupyter ...`) for the changes to take effect. Is that acceptable, or do you want me to also set up a volume-mount approach so `process_sysml.py` can be updated without rebuilding?
+> **Docker image rebuild**: The change to `process_sysml.py` lives inside the Docker image. After merging, you'll need to rebuild the image (`docker build -f Dockerfile.jupyter ...`) for the changes to take effect. Is that acceptable, or do you want me to also set up a volume-mount approach so `process_sysml.py` can be updated without rebuilding? 
+-> rebuilding is fine, but create a Instruction file how I can do that (put in that file any things I have to take care of after implementation)
 
 ## Verification Plan
 
