@@ -17,3 +17,5 @@ __pycache__/
 .venv/bin/flask
 .venv/bin/normalizer
 .venv/bin/pip
+
+notes/
