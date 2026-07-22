@@ -64,7 +64,11 @@ def parseSysmlToTwinClass(sysmlDirPath: str, outputFolder="output") -> list[Twin
     if not sysml_files:
         logging.error("No .sysml files found in the provided directory.")
         return
-    path = exchangeService.sendToApi(sysml_files)
+    try:
+        path = exchangeService.sendToApi(sysml_files)
+    except RuntimeError as e:
+        logging.error(str(e))
+        sys.exit(1)
     logging.info("Environment setup complete.")
 
     logging.info("Init DataBase...")
