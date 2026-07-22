@@ -27,17 +27,29 @@ class ExchangeService:
     stdin=subprocess.DEVNULL,
     text=True
 )
+        error_lines = [l for l in result.stdout.splitlines() if l.startswith("ERROR") or l.startswith("  |")]
+        if error_lines:
+            print("\n--- SysML Conversion Errors ---", flush=True)
+            for line in error_lines:
+                print(line, flush=True)
+            print("--- End SysML Conversion Errors ---\n", flush=True)
+
         if result.returncode != 0:
-            logging.error("STDOUT: %s", result.stdout)
-            logging.error("STDERR: %s", result.stderr)
-            sys.exit(1)
+            if result.stderr.strip():
+                logging.error("STDERR: %s", result.stderr)
+            raise RuntimeError(
+                f"SysML conversion failed. See errors above. "
+                f"(exit code {result.returncode})"
+            )
 
         logging.info("Full STDOUT: %s", result.stdout)
 
         export_line = next((l for l in result.stdout.splitlines() if "Export path:" in l), None)
         if not export_line:
-            logging.error("Export Path not found in output")
-            sys.exit(1)
+            logging.error("Export Path not found in container output")
+            raise RuntimeError(
+                "SysML conversion produced no export. The SysML file(s) likely contain errors."
+            )
 
         container_path = export_line.split(":", 1)[1].strip()
         local_path = os.path.join(os.path.dirname(self.upload_script_path), "export.json")

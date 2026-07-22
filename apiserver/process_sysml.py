@@ -27,7 +27,7 @@ def run_cmd(cmd, timeout=600):
             match = re.search(r'base64,([^"]+)"', html)
             if match:
                 decoded = base64.b64decode(match.group(1)).decode("utf-8")
-                with open(EXPORT_PATH, "w  ") as f:
+                with open(EXPORT_PATH, "w") as f:
                     f.write(decoded)
                 print(">> Export saved", flush=True)
         if msg["header"]["msg_type"] == "error":
