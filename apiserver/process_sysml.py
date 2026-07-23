@@ -30,6 +30,20 @@ def run_cmd(cmd, timeout=600):
                 with open(EXPORT_PATH, "w") as f:
                     f.write(decoded)
                 print(">> Export saved", flush=True)
+        if msg["header"]["msg_type"] == "stream" and msg["content"].get("name") == "stderr":
+            # The SysML kernel reports validation problems as plain stderr text
+            # ("ERROR:Couldn't resolve reference to ...") and still replies "ok",
+            # so they never arrive as an "error" message.
+            for line in strip_ansi(msg["content"].get("text", "")).splitlines():
+                line = line.strip()
+                if not line:
+                    continue
+                if line.startswith("ERROR:"):
+                    error_msg = line[len("ERROR:"):].strip()
+                    errors.append(error_msg)
+                    print(f"ERROR: {error_msg}", flush=True)
+                else:
+                    print(f"WARNING: {line}", flush=True)
         if msg["header"]["msg_type"] == "error":
             ename = strip_ansi(msg['content']['ename'])
             evalue = strip_ansi(msg['content']['evalue'])

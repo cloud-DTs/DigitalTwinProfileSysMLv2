@@ -27,7 +27,8 @@ class ExchangeService:
     stdin=subprocess.DEVNULL,
     text=True
 )
-        error_lines = [l for l in result.stdout.splitlines() if l.startswith("ERROR") or l.startswith("  |")]
+        error_lines = [l for l in result.stdout.splitlines()
+                       if l.startswith("ERROR") or l.startswith("WARNING") or l.startswith("  |")]
         if error_lines:
             print("\n--- SysML Conversion Errors ---", flush=True)
             for line in error_lines:
