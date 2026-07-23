@@ -6,6 +6,8 @@ services:
     container_name: sysml-kernel-container
     environment:
       - SYSML_API_SERVER=http://sysmlapiserver:9000
+    volumes:
+      - ./process_sysml.py:/home/sysml/process_sysml.py
     ports:
       - "8888:8888"
     entrypoint: []
