@@ -19,3 +19,8 @@ __pycache__/
 .venv/bin/pip
 
 notes/
+
+# Converter artifacts
+output/
+src/export.json
+src/sysmlfiles/
