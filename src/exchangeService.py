@@ -1,10 +1,19 @@
 import os
 import logging
+import re
 import subprocess
 import sys
 
 EXPORT_PATH_KEY = "Export Path:"
 CONTAINER_NAME = "sysml-kernel-container"
+
+# The kernel reports positions against the single buffer it was handed, e.g.
+# "(11.sysml line : 190 column : 31)" -- where "11" is the kernel's cell counter,
+# not one of our files.
+KERNEL_POSITION_RE = re.compile(r"\(\d+\.sysml line : (\d+) column : (\d+)\)")
+
+# process_sysml.py prepends "package GeneratedExport {" before the concatenated files.
+WRAPPER_LINE_OFFSET = 1
 
 class ExchangeService:
     def __init__(self, upload_script_path: str, file_path: str):
@@ -18,6 +27,37 @@ class ExchangeService:
             if f.endswith(".sysml")
         ]
 
+    def _build_line_spans(self, data: list):
+        """Map each file onto the line range it occupies in the buffer sent to the kernel.
+
+        The files are concatenated in argv order (see uploadSysml.sh), so a file's span is
+        just the running line total. Returns [(first_line, last_line, path), ...].
+        """
+        spans = []
+        offset = WRAPPER_LINE_OFFSET
+        for path in data:
+            try:
+                with open(path, encoding="utf-8") as f:
+                    line_count = len(f.read().splitlines())
+            except OSError as e:
+                logging.warning("Could not measure %s for error mapping: %s", path, e)
+                return []
+            spans.append((offset + 1, offset + line_count, path))
+            offset += line_count
+        return spans
+
+    def _localize(self, line: str, spans: list) -> str:
+        """Rewrite kernel buffer positions into 'file.sysml line : N' of the original file."""
+        def replace(match):
+            buffer_line, column = int(match.group(1)), match.group(2)
+            for first, last, path in spans:
+                if first <= buffer_line <= last:
+                    local_line = buffer_line - first + 1
+                    return f"({os.path.basename(path)} line : {local_line} column : {column})"
+            return match.group(0)
+
+        return KERNEL_POSITION_RE.sub(replace, line)
+
     def sendToApi(self, data: list) -> str:
         logging.info("Uploading SysML files to the API...")
         print(f">> Uploading files: {data}", flush=True)
@@ -30,9 +70,10 @@ class ExchangeService:
         error_lines = [l for l in result.stdout.splitlines()
                        if l.startswith("ERROR") or l.startswith("WARNING") or l.startswith("  |")]
         if error_lines:
+            spans = self._build_line_spans(data)
             print("\n--- SysML Conversion Errors ---", flush=True)
             for line in error_lines:
-                print(line, flush=True)
+                print(self._localize(line, spans), flush=True)
             print("--- End SysML Conversion Errors ---\n", flush=True)
 
         if result.returncode != 0:
