@@ -19,36 +19,86 @@ class ExchangeService:
         ]
 
     def sendToApi(self, data: list) -> str:
-        logging.info("Uploading SysML files to the API...")
-        print(f">> Uploading files: {data}", flush=True)
-        result = subprocess.run(
-    ['sh', self.upload_script_path] + data,
-    stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-    stdin=subprocess.DEVNULL,
-    text=True
-)
-        if result.returncode != 0:
-            logging.error("STDOUT: %s", result.stdout)
-            logging.error("STDERR: %s", result.stderr)
-            sys.exit(1)
+        subprocess.run(
+            [
+                "docker",
+                "exec",
+                CONTAINER_NAME,
+                "rm",
+                "-f",
+                "/home/sysml/export.json"
+            ],
+            check=True
+        )
+        logging.info("Processing SysML files...")
+        print(f">> SysML files: {data}", flush=True)
 
-        logging.info("Full STDOUT: %s", result.stdout)
+        process = subprocess.Popen(
+            ['sh', self.upload_script_path] + data,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            stdin=subprocess.DEVNULL,
+            text=True,
+            bufsize=1
+        )
 
-        export_line = next((l for l in result.stdout.splitlines() if "Export path:" in l), None)
+        lines = []
+
+        for line in process.stdout:
+            print(line, end="", flush=True)
+            lines.append(line)
+
+        returncode = process.wait()
+
+        if returncode != 0:
+            raise RuntimeError(
+                f"SysML processing failed with exit code {returncode}"
+            )
+
+        output = "".join(lines)
+
+        export_line = next(
+            (l for l in output.splitlines() if "Export path:" in l),
+            None
+        )
+
         if not export_line:
-            logging.error("Export Path not found in output")
-            sys.exit(1)
+            raise RuntimeError("Export Path not found in SysML converter output")
 
         container_path = export_line.split(":", 1)[1].strip()
-        local_path = os.path.join(os.path.dirname(self.upload_script_path), "export.json")
+
+        local_path = os.path.join(
+            os.path.dirname(self.upload_script_path),
+            "export.json"
+        )
 
         cp_result = subprocess.run(
-            ["docker", "cp", f"{CONTAINER_NAME}:{container_path}", local_path],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            [
+                "docker",
+                "cp",
+                f"{CONTAINER_NAME}:{container_path}",
+                local_path
+            ]
         )
+
         if cp_result.returncode != 0:
-            logging.error("docker cp failed: %s", cp_result.stderr)
-            sys.exit(1)
+            raise RuntimeError("docker cp failed")
+
+        cleanup_result = subprocess.run(
+            [
+                "docker",
+                "exec",
+                CONTAINER_NAME,
+                "rm",
+                "-f",
+                container_path,
+            ]
+        )
+
+        if cleanup_result.returncode != 0:
+            logging.warning(
+                f"Could not delete container export: {container_path}"
+            )
 
         logging.info(f"Export saved to: {local_path}")
         return local_path

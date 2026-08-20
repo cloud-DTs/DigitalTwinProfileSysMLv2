@@ -1,3 +1,5 @@
+import sys
+
 from jupyter_client import BlockingKernelClient
 import os, time, base64, re
 
@@ -11,11 +13,13 @@ client.start_channels()
 
 EXPORT_PATH = "/home/sysml/export.json"
 
-def run_cmd(cmd, timeout=600):
+def run_cmd(cmd, timeout=3600):
+    print(f">> Executing command: {cmd}", flush=True)
     msg_id = client.execute(cmd)
     while True:
         msg = client.get_iopub_msg(timeout=timeout)
         if msg["header"]["msg_type"] in ("execute_result", "display_data"):
+            print(f">> Output: {msg['content']}", flush=True)
             data = msg["content"].get("data", {})
             html = data.get("text/html", "")
             match = re.search(r'base64,([^"]+)"', html)
@@ -32,7 +36,7 @@ def run_cmd(cmd, timeout=600):
             break
 
 def run_task():
-    raw_content = os.environ.get("SYSML_CONTENT", "")
+    raw_content = sys.stdin.read()
     
     safe_name = "GeneratedExport"
 

@@ -54,35 +54,23 @@ library package DigitalTwinLibrary{
     abstract attribute externalTopic:ScalarValues::String;
     abstract attribute useExternalTopic:ScalarValues::Boolean;
     abstract attribute feedbackTopicType:FeedbackTopicType;
-    abstract attribute inputParameters:LibDTAttributes[0..*];
-    abstract attribute constInputParameters:ConstAttributes[0..*];
-    abstract attribute outputParameters:AttributeDataType[0..*];
- 
     abstract part def LibTwinStrategyAction{
         abstract attribute redefines name;
         abstract attribute redefines description;
         abstract attribute redefines external default true;
         abstract attribute redefines pathToCode;
-        abstract attribute redefines inputParameters;
-        abstract attribute redefines outputParameters;
         abstract attribute redefines strategyType default StrategyType::LAMBDA;
         abstract attribute redefines customPayload;
         abstract attribute redefines feedbackTopicType default FeedbackTopicType::NOFEEDBACK;
         abstract part redefines componentTopic;
         abstract attribute redefines externalTopic;
     }
-
-
     
     
     enum def AttributeDataType{
         STRING;
         DOUBLE;
         INTEGER;
-        VECTOR_DOUBLE;
-        VECTOR_INTEGER;
-        VECTOR_STRING;
-
     }
     
     enum def FeedbackTopicType{
