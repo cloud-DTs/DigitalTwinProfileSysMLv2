@@ -3,23 +3,21 @@
         "condition": "QTKHwk8cPVK5szLFatR7nz.p13.power == QTKHwk8cPVK5szLFatR7nz.KebaP30const_component.maxConsumption",
         "action": {
             "type": "lambda",
-            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/DigitalTwinProfileSysMLv2/testLambdaFunctions/high-temperature-callback",
+            "pathToCode": "/home/marco/HackathonSysmlv2DemoRepository/digital-twin-manager/lambda_functions/event_actions/high-temperature-callback",
             "functionName": "stopCharging",
             "external": false,
             "feedback": {
                 "type": "mqtt",
                 "iotDeviceId": "WWBRxzKmtE9TFbUFMgFkBz",
                 "payload": "action-result"
-            },
-            "inputParameters": [],
-            "outputParameters": []
+            }
         }
     },
     {
         "condition": "dcRX7gRVBhYoT5rPU2pVvB.p14.consumption == dcRX7gRVBhYoT5rPU2pVvB.SieVersichargeconst_component.maxConsumption",
         "action": {
             "type": "lambda",
-            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/DigitalTwinProfileSysMLv2/testLambdaFunctions/high-temperature-callback",
+            "pathToCode": "/home/marco/HackathonSysmlv2DemoRepository/digital-twin-manager/lambda_functions/event_actions/high-temperature-callback",
             "functionName": "stopCharging14",
             "external": false,
             "feedback": {
@@ -28,36 +26,7 @@
                 "payload": {
                     "message": "High Consumption Alert"
                 }
-            },
-            "inputParameters": [
-                {
-                    "name": "test1",
-                    "dataType": "DOUBLE",
-                    "id": "dcRX7gRVBhYoT5rPU2pVvB.p14.consumption"
-                },
-                {
-                    "name": "test2",
-                    "dataType": "DOUBLE",
-                    "value": 50.0,
-                    "id": "dcRX7gRVBhYoT5rPU2pVvB.SieVersichargeconst_component.maxConsumption"
-                },
-                {
-                    "name": "test7",
-                    "dataType": "DOUBLE",
-                    "value": 50.0,
-                    "id": "dcRX7gRVBhYoT5rPU2pVvB.SieVersichargeconst_component.maxConsumption"
-                }
-            ],
-            "outputParameters": [
-                {
-                    "name": "test3",
-                    "dataType": "STRING"
-                },
-                {
-                    "name": "test6",
-                    "dataType": "DOUBLE"
-                }
-            ]
+            }
         }
     }
 ]

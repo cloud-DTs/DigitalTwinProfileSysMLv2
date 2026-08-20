@@ -18,7 +18,6 @@ logging.basicConfig(
 )
 
 
-
 def args_check():
     if len(sys.argv) < 2:
         logging.error("Usage: python main.py <path_to_sysml_directory>")
