@@ -12,3 +12,7 @@ services:
     command: >
       conda run --no-capture-output -n sysml 
       jupyter kernel --kernel=sysml --ip=0.0.0.0
+    ulimits:
+      stack:
+        soft: -1
+        hard: -1

@@ -1,5 +1,5 @@
 FROM eclipse-temurin:21-jdk
-
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=90.0"
 # Set Home directory
 ENV HOME=/home/sysml
 WORKDIR ${HOME}
