@@ -13,6 +13,9 @@ class AttributeDataType(Enum):
     STRING = "STRING"
     INTEGER = "INTEGER"
     DOUBLE = "DOUBLE"
+    VECTOR_DOUBLE = "VECTOR_DOUBLE"
+    VECTOR_INTEGER = "VECTOR_INTEGER"
+    VECTOR_STRING = "VECTOR_STRING"
 
 @dataclass
 class MeasureAttribute(TwinModel):
@@ -20,6 +23,11 @@ class MeasureAttribute(TwinModel):
     parentComponent: Component = None
 
     def to_iot_device_dict(self) -> dict:
+        return {
+            "name": self.name,
+            "dataType": self.dataType.value
+        }
+    def to_event_dict(self) -> dict:
         return {
             "name": self.name,
             "dataType": self.dataType.value

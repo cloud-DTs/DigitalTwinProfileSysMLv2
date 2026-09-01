@@ -1,3 +1,5 @@
+import logging
+
 from .ElementRepository import ElementRepository
 from .SysmlElement import SysmlElement, Field, SysmlType
 from src.TargetModel.twin import Twin
@@ -124,6 +126,72 @@ class SysmlTraversal:
                                         continue
                                     if list(path_tuple[-len(path_ids):]) == path_ids:
                                         return model
+            #When the field is a feature chain with only on . then we have here a fallback 
+            owned_ids = {r["@id"] for r in (element.getField(Field.OWNED_FEATURE) or []) if isinstance(r, dict)}
+            inherited_ids = {r["@id"] for r in (element.getField(Field.INHERITED_FEATURE) or []) if isinstance(r, dict)}
+            member = element.getField(Field.MEMBER) or []
+            
+            resolved_ids = {r["@id"] for r in member 
+                            if isinstance(r, dict) 
+                            and r["@id"] not in owned_ids 
+                            and r["@id"] not in inherited_ids}
+
+            foundedMaxModel = None
+            maxPathLen = -1
+
+            for path_tuple, model in globals.DATABASE.shared_id_wrapper.dataTable.items():
+                if not isinstance(model, (MeasureAttribute, ConstAttribute, Component)):
+                    continue
+                if path_tuple and path_tuple[-1] in resolved_ids:
+                    if len(path_tuple) > maxPathLen:
+                        maxPathLen = len(path_tuple)
+                        foundedMaxModel = model
+            
+            if foundedMaxModel:
+                logging.info(f"Successfully resolved to: {foundedMaxModel.name}")
+            return foundedMaxModel
  
         return element.getField(Field.VALUE)
  
+
+    def getAllParametersByParent(
+        self,
+        element: SysmlElement,
+        parentName: str
+        ) -> list[SysmlElement]:
+        logging.info(
+            f"Getting all parameters for parent: {parentName}"
+        )
+
+        result = []
+
+        owned_features = element.getField(Field.OWNED_FEATURE) or []
+
+        for ref in owned_features:
+            if not isinstance(ref, dict):
+                continue
+
+            candidate = self.repo.get(ref["@id"])
+
+            if candidate is None:
+                continue
+
+            def has_name(el: SysmlElement) -> bool:
+                return el.name == parentName
+
+            found, _ = self.find_in_hierarchy(
+                candidate,
+                has_name
+            )
+
+            if not found:
+                continue
+
+            logging.info(
+                f"Found candidate {candidate.name} "
+                f"for parentName: {parentName}"
+            )
+
+            result.append(candidate)
+
+        return result

@@ -43,8 +43,6 @@ package MGrid {
      
 
     #Twin def MGrid {
-
-        #entity MicroGrid{
             #entity battery : Battery{
 
                 p16:>>sensor;
@@ -91,29 +89,24 @@ package MGrid {
                     }
                 }
             }
-    }
+    
         :>>hotDatabaseRetentionDays default 30;
         :>>coldDatabaseRetentionDays default 30;
 
         #condition stopCharging :StopCharging{
-            :>>leftOperand = MicroGrid.KebaP30.p13.power;
+            :>>leftOperand = KebaP30.p13.power;
             :>>operator = ComparisonOperator::EQUAL;
-            :>>rightOperand = MicroGrid.KebaP30.maxConsumption;
+            :>>rightOperand = KebaP30.maxConsumption;
             :>>stopCharging{
                 :>> feedbackTopicType = FeedbackTopicType::INTERN;
-                :>> componentTopic = MicroGrid.KebaP30.p13;
-            }
-        }
-        #condition stopChargingP14:StopCharging{
-            :>>leftOperand = MicroGrid.SieVersicharge.p14.consumption;
-            :>>operator = ComparisonOperator::EQUAL;
-            :>>rightOperand = MicroGrid.SieVersicharge.maxConsumption;
-            stopCharging14:>>stopCharging{
-                :>> feedbackTopicType = FeedbackTopicType::EXTERN;
-                :>> externalTopic = "EXTERN_TPIC";
-                :>> customPayload = "{\"message\":\"High Consumption Alert\"}";
+                :>> componentTopic = KebaP30.p13;
+                test2:> inputParameters = KebaP30.p13.power;
+                test3:> inputParameters = KebaP30.p13.power;
+               test4:>outputParameters = KebaP30.p13.power;
+              
             }
         }
     
     }
+    
 }

@@ -4,7 +4,7 @@ from ..TargetModel.twin import Twin
 from ..TargetModel.twin_component import Component
 from ..TargetModel.twin_database import TwinDatabase,TwinDataBaseTier,TwinDataBaseType
 from ..TargetModel.twin_entity import TwinEntity
-from ..TargetModel.twin_strategy import FeedbackTopicType
+from ..TargetModel.twin_strategy import FeedbackTopicType,StrategyParameter
 from ..TargetModel.twin_model import TwinModel
 from ..TargetModel.twin_constAttribute import ConstAttribute
 from ..TargetModel.twin_measureAttribute import MeasureAttribute, AttributeDataType
@@ -159,37 +159,145 @@ class ConditionRoutine(MapRoutine):
 class StrategyRoutine(MapRoutine):
     def map(self, element: SysmlElement, parent, my_path, current_path) -> Strategy:
         strategy = Strategy(name=element.name)
+
         cond_obj = self.get_repo_model(Condition, current_path)
         if cond_obj:
             cond_obj.add_strategy(strategy)
         else:
-            logging.error(f"Parent Condition for Strategy {element.name} not found.")
+            logging.error(
+                f"Parent Condition for Strategy {element.name} not found."
+            )
             sys.exit(1)
- 
-        strategy.strategyType = StrategyType(str(self.traversal.resolve_enum_ref(element, "strategyType")).lower())
-        strategy.pathToCode = str(self.traversal.resolve_string(element, "pathToCode"))
-        strategy.external = self.traversal.resolve_bool(element, "external")
+
+        strategy.strategyType = StrategyType(
+            str(
+                self.traversal.resolve_enum_ref(
+                    element,
+                    "strategyType"
+                )
+            ).lower()
+        )
+
+        strategy.pathToCode = str(
+            self.traversal.resolve_string(
+                element,
+                "pathToCode"
+            )
+        )
+
+        strategy.external = self.traversal.resolve_bool(
+            element,
+            "external"
+        )
+
         if strategy.external is False:
             path_obj = Path(strategy.pathToCode)
+
             if not path_obj.exists() or path_obj.is_file():
-                logging.warning(f"Strategy {element.name} has invalid pathToCode: {strategy.pathToCode}")
+                logging.warning(
+                    f"Strategy {element.name} has invalid pathToCode: "
+                    f"{strategy.pathToCode}"
+                )
             else:
                 strategy.pathToCode = str(path_obj)
-        strategy.feedbackTopicType = FeedbackTopicType(str(self.traversal.resolve_enum_ref(element, "feedbackTopicType")).upper())
-        external_payload = self.traversal.resolve_string(element, "customPayload")
+
+        strategy.feedbackTopicType = FeedbackTopicType(
+            str(
+                self.traversal.resolve_enum_ref(
+                    element,
+                    "feedbackTopicType"
+                )
+            ).upper()
+        )
+
+        external_payload = self.traversal.resolve_string(
+            element,
+            "customPayload"
+        )
+
         if external_payload:
             try:
-                strategy.customPaylod = json.loads(external_payload)
+                strategy.customPayload = json.loads(
+                    external_payload
+                )
             except json.JSONDecodeError as e:
-                logging.error(f"Error decoding customPayload in Strategy {element.name}: {e}")
+                logging.error(
+                    f"Error decoding customPayload "
+                    f"in Strategy {element.name}: {e}"
+                )
                 sys.exit(1)
-        strategy.componentTopic = self.traversal.resolve_chain_ref(element, "componentTopic")
-        strategy.externalTopic = str(self.traversal.resolve_string(element, "externalTopic") or "")
+
+        strategy.componentTopic = self.traversal.resolve_chain_ref(
+            element,
+            "componentTopic"
+        )
+
+        strategy.externalTopic = str(
+            self.traversal.resolve_string(
+                element,
+                "externalTopic"
+            ) or ""
+        )
+
+        input_parameter_names = (
+            self.traversal.getAllParametersByParent(
+                element,
+                "inputParameters"
+            )
+        )
+
+        output_parameter_names = (
+            self.traversal.getAllParametersByParent(
+                element,
+                "outputParameters"
+            )
+        )
+
+        all_params = [
+            (
+                "inputParameters",
+                input_parameter_names,
+                strategy.inputParameters.append,
+            ),
+            (
+                "outputParameters",
+                output_parameter_names,
+                strategy.outputParameters.append,
+            ),
+        ]
+
+        for param_type, parameters, append_func in all_params:
+            for param in parameters:
+                if param.name is None or param.name == param_type:
+                    raise ValueError(
+                        f"Set a name for {param_type} "
+                        f"in Strategy {element.name}."
+                    )
+
+                attribute = self.traversal.resolve_chain_ref(
+                    element,
+                    param.name
+                )
+
+                if attribute is None:
+                    continue
+
+                print(
+                    f"Resolved strategy parameter "
+                    f"of type {param_type}: {param.name}"
+                )
+
+                append_func(
+                    StrategyParameter(
+                        customName=param.name,
+                        attribute=attribute
+                    )
+                )
+
         return strategy
- 
+
     def get_sub_meta_types(self):
         return []
- 
  
 class ModelMapper:
     def __init__(self, repo: ElementRepository, metaDataDefinitonsMap, metaDataUsageMap, elementMetaTypeMap):

@@ -1,6 +1,6 @@
 [
     {
-        "id": "VnwJkpzSZmNTZjKDS96ghM",
+        "id": "j735vaWV8mvR4oFoC5WxfR",
         "properties": [
             {
                 "name": "totalCapacity",
@@ -9,7 +9,7 @@
         ]
     },
     {
-        "id": "WWBRxzKmtE9TFbUFMgFkBz",
+        "id": "cAavAgvv8QeySYnykC6SnE",
         "properties": [
             {
                 "name": "power",
@@ -18,7 +18,7 @@
         ]
     },
     {
-        "id": "QTKHwk8cPVK5szLFatR7nzconst_component",
+        "id": "drE7zaVFBTfy9m3oqA9zGeconst_component",
         "properties": [
             {
                 "name": "maxConsumption",
@@ -28,7 +28,7 @@
         ]
     },
     {
-        "id": "kQTEEkwsPaTQ6S9FgQBvsy",
+        "id": "LEMj6Gipozfb9QXQsXicGX",
         "properties": [
             {
                 "name": "consumption",
@@ -37,7 +37,7 @@
         ]
     },
     {
-        "id": "dcRX7gRVBhYoT5rPU2pVvBconst_component",
+        "id": "WazANWVBgTYDTL4eTM9uejconst_component",
         "properties": [
             {
                 "name": "maxConsumption",
@@ -47,7 +47,7 @@
         ]
     },
     {
-        "id": "SF5G9xybBY8uK8sbVeQDEk",
+        "id": "EDEMLzjQfnewptAue5gzcB",
         "properties": [
             {
                 "name": "consumption",
@@ -56,7 +56,7 @@
         ]
     },
     {
-        "id": "YZcmhr57X8Dy98vrzb4j7aconst_component",
+        "id": "QC7hJA2nfuq3y8oXYFW8dEconst_component",
         "properties": [
             {
                 "name": "maxConsumption",
@@ -66,7 +66,7 @@
         ]
     },
     {
-        "id": "MzaceBg5xdNtVufYww8bmH",
+        "id": "jcLnb8oJcbK7q3ACfqupeH",
         "properties": [
             {
                 "name": "output",
@@ -75,7 +75,7 @@
         ]
     },
     {
-        "id": "9EK8V7oxuumHQWyjEXWDS8",
+        "id": "EYt2SyY5KEkYZSRmF9M59u",
         "properties": [
             {
                 "name": "consumption",
@@ -84,7 +84,7 @@
         ]
     },
     {
-        "id": "JdUHGLYQ8VdQf3cpyYevBUconst_component",
+        "id": "bXmW8uK8fUj2PpBQF6wDNSconst_component",
         "properties": [
             {
                 "name": "maxConsumption",
@@ -94,7 +94,7 @@
         ]
     },
     {
-        "id": "fHujZMcJurWrv5ohiEg3NM",
+        "id": "bb27YHzwCVYu5dtq9EnZC8",
         "properties": [
             {
                 "name": "consumption",
@@ -103,7 +103,7 @@
         ]
     },
     {
-        "id": "ksEfvjfAUhogL6m32qBsudconst_component",
+        "id": "Uisu2P59tfTo8Bz2SEY94Econst_component",
         "properties": [
             {
                 "name": "maxConsumption",

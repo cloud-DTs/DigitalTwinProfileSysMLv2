@@ -1,6 +1,6 @@
 [
     {
-        "condition": "QTKHwk8cPVK5szLFatR7nz.p13.power == QTKHwk8cPVK5szLFatR7nz.KebaP30const_component.maxConsumption",
+        "condition": "drE7zaVFBTfy9m3oqA9zGe.p13.power == drE7zaVFBTfy9m3oqA9zGe.KebaP30const_component.maxConsumption",
         "action": {
             "type": "lambda",
             "pathToCode": "/home/marco/HackathonSysmlv2DemoRepository/digital-twin-manager/lambda_functions/event_actions/high-temperature-callback",
@@ -8,25 +8,28 @@
             "external": false,
             "feedback": {
                 "type": "mqtt",
-                "iotDeviceId": "WWBRxzKmtE9TFbUFMgFkBz",
+                "iotDeviceId": "cAavAgvv8QeySYnykC6SnE",
                 "payload": "action-result"
-            }
-        }
-    },
-    {
-        "condition": "dcRX7gRVBhYoT5rPU2pVvB.p14.consumption == dcRX7gRVBhYoT5rPU2pVvB.SieVersichargeconst_component.maxConsumption",
-        "action": {
-            "type": "lambda",
-            "pathToCode": "/home/marco/HackathonSysmlv2DemoRepository/digital-twin-manager/lambda_functions/event_actions/high-temperature-callback",
-            "functionName": "stopCharging14",
-            "external": false,
-            "feedback": {
-                "type": "mqtt",
-                "topic": "EXTERN_TPIC",
-                "payload": {
-                    "message": "High Consumption Alert"
+            },
+            "inputParameters": [
+                {
+                    "name": "test2",
+                    "dataType": "DOUBLE",
+                    "id": "drE7zaVFBTfy9m3oqA9zGe.p13.power"
+                },
+                {
+                    "name": "test3",
+                    "dataType": "DOUBLE",
+                    "id": "drE7zaVFBTfy9m3oqA9zGe.p13.power"
                 }
-            }
+            ],
+            "outputParameters": [
+                {
+                    "name": "test4",
+                    "dataType": "DOUBLE",
+                    "id": "drE7zaVFBTfy9m3oqA9zGe.p13.power"
+                }
+            ]
         }
     }
 ]
