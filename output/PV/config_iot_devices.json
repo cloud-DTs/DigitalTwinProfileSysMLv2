@@ -1,30 +1,11 @@
 [
     {
-        "id": "AHFt7eHj9HtPmkT955EYg9",
-        "properties": [
-            {
-                "name": "output",
-                "dataType": "DOUBLE"
-            }
-        ]
-    },
-    {
         "id": "QWB3zi3nv8UNdtvw8Fbkk8const_component",
         "properties": [
             {
-                "name": "maxOutput",
+                "name": "generatedPower",
                 "dataType": "DOUBLE",
-                "initValue": 10000.0
-            },
-            {
-                "name": "minOutput",
-                "dataType": "DOUBLE",
-                "initValue": 100.0
-            },
-            {
-                "name": "peakThreshold",
-                "dataType": "DOUBLE",
-                "initValue": 8000.0
+                "initValue": 50.0
             }
         ]
     }

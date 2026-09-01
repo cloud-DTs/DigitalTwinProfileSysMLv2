@@ -1,55 +1,20 @@
 [
     {
-        "condition": "QWB3zi3nv8UNdtvw8Fbkk8.pV1.output < QWB3zi3nv8UNdtvw8Fbkk8.PVconst_component.minOutput",
+        "condition": "QWB3zi3nv8UNdtvw8Fbkk8.PVconst_component.generatedPower == QWB3zi3nv8UNdtvw8Fbkk8.PVconst_component.generatedPower",
         "action": {
             "type": "lambda",
-            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/testLambdaFunctions/pv/lowOutput",
-            "functionName": "lowOutput",
+            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/input/sysml/testLambdaFunctions/pv/production",
+            "functionName": "production",
             "external": false,
-            "feedback": {
-                "type": "mqtt",
-                "iotDeviceId": "AHFt7eHj9HtPmkT955EYg9",
-                "payload": "action-result"
-            },
-            "inputParameters": [],
-            "outputParameters": []
-        }
-    },
-    {
-        "condition": "QWB3zi3nv8UNdtvw8Fbkk8.pV1.output > QWB3zi3nv8UNdtvw8Fbkk8.PVconst_component.peakThreshold",
-        "action": {
-            "type": "lambda",
-            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/testLambdaFunctions/pv/peakProduction",
-            "functionName": "peakProduction",
-            "external": false,
-            "feedback": {
-                "type": "mqtt",
-                "iotDeviceId": "AHFt7eHj9HtPmkT955EYg9",
-                "payload": "action-result"
-            },
             "inputParameters": [
                 {
-                    "name": "test1",
+                    "name": "generatedPower",
                     "dataType": "DOUBLE",
-                    "id": "QWB3zi3nv8UNdtvw8Fbkk8.pV1.output"
-                },
-                {
-                    "name": "test2",
-                    "dataType": "DOUBLE",
-                    "value": 8000.0,
-                    "id": "QWB3zi3nv8UNdtvw8Fbkk8.PVconst_component.peakThreshold"
+                    "value": 50.0,
+                    "id": "QWB3zi3nv8UNdtvw8Fbkk8.PVconst_component.generatedPower"
                 }
             ],
-            "outputParameters": [
-                {
-                    "name": "test3",
-                    "dataType": "STRING"
-                },
-                {
-                    "name": "test4",
-                    "dataType": "DOUBLE"
-                }
-            ]
+            "outputParameters": []
         }
     }
 ]

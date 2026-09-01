@@ -1,70 +1,24 @@
 [
     {
-        "condition": "4udMBA6jAnnRf33MNHHP9P.p16.currentCapacity < 4udMBA6jAnnRf33MNHHP9P.Batteryconst_component.minCapacity",
+        "condition": "4udMBA6jAnnRf33MNHHP9P.p16.isPlugged == 4udMBA6jAnnRf33MNHHP9P.Batteryconst_component.trueValue",
         "action": {
             "type": "lambda",
-            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/testLambdaFunctions/battery/low_capacity",
-            "functionName": "lowCapacity",
+            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/input/sysml/testLambdaFunctions/battery/status",
+            "functionName": "status",
             "external": false,
             "feedback": {
                 "type": "mqtt",
-                "iotDeviceId": "SwiB9jTPm8kzDXz6chmo5T",
-                "payload": "action-result"
-            },
-            "inputParameters": [],
-            "outputParameters": []
-        }
-    },
-    {
-        "condition": "4udMBA6jAnnRf33MNHHP9P.p16.currentCapacity == 4udMBA6jAnnRf33MNHHP9P.Batteryconst_component.totalCapacity",
-        "action": {
-            "type": "lambda",
-            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/testLambdaFunctions/battery/fully_charged",
-            "functionName": "fullyCharged",
-            "external": false,
-            "feedback": {
-                "type": "mqtt",
-                "iotDeviceId": "SwiB9jTPm8kzDXz6chmo5T",
-                "payload": "action-result"
-            },
-            "inputParameters": [],
-            "outputParameters": []
-        }
-    },
-    {
-        "condition": "4udMBA6jAnnRf33MNHHP9P.p16.temperature > 4udMBA6jAnnRf33MNHHP9P.Batteryconst_component.maxTemperature",
-        "action": {
-            "type": "lambda",
-            "pathToCode": "/home/marcocotrotzo/PycharmProjects/SymlCOnv/testLambdaFunctions/battery/overheatAlert",
-            "functionName": "overheatAlert",
-            "external": false,
-            "feedback": {
-                "type": "mqtt",
-                "iotDeviceId": "SwiB9jTPm8kzDXz6chmo5T",
+                "topic": "Battery/iot-data",
                 "payload": "action-result"
             },
             "inputParameters": [
                 {
-                    "name": "test1",
-                    "dataType": "DOUBLE",
-                    "id": "4udMBA6jAnnRf33MNHHP9P.p16.temperature"
-                },
-                {
-                    "name": "test2",
-                    "dataType": "DOUBLE",
-                    "id": "4udMBA6jAnnRf33MNHHP9P.p16.currentCapacity"
+                    "name": "chargeValue",
+                    "dataType": "INTEGER",
+                    "id": "4udMBA6jAnnRf33MNHHP9P.p16.charges"
                 }
             ],
-            "outputParameters": [
-                {
-                    "name": "test3",
-                    "dataType": "STRING"
-                },
-                {
-                    "name": "test6",
-                    "dataType": "DOUBLE"
-                }
-            ]
+            "outputParameters": []
         }
     }
 ]
