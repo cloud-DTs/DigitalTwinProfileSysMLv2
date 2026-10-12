@@ -11,6 +11,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="src" target="25" />
       <module name="sysml-twin-mapper" target="21" />
     </bytecodeTargetLevel>
   </component>

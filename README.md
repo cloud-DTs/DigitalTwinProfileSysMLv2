@@ -25,7 +25,7 @@ python main.py <sysml file or directory>... [-o <output directory>]
 Examples:
 
 ```bash
-python main.py ./src/sysmlfiles/
+python main.py ./Test.sysml
 python main.py ./models/MGrid.sysml ./models/shared/ -o ./deploy
 ```
 
