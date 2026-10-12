@@ -20,7 +20,8 @@
                 {
                     "name": "test3",
                     "dataType": "DOUBLE",
-                    "id": "drE7zaVFBTfy9m3oqA9zGe.p13.power"
+                    "value": 15.0,
+                    "id": "drE7zaVFBTfy9m3oqA9zGe.KebaP30const_component.maxConsumption"
                 }
             ],
             "outputParameters": [

@@ -37,8 +37,13 @@ package MGrid {
             :>> value default "50.0";
             :>>dataType default AttributeDataType::DOUBLE;
         }
+        #constAttribute maxConsumptionVec {
+            :>> value default "(50.0, 50.0, 50.0)";
+            :>>dataType default AttributeDataType::VECTOR_DOUBLE;
+        }
         #component sensor: PAC_Sensor;
     }
+
 
      
 
@@ -89,7 +94,7 @@ package MGrid {
                     }
                 }
             }
-    }
+    
         :>>hotDatabaseRetentionDays default 30;
         :>>coldDatabaseRetentionDays default 30;
 
@@ -100,9 +105,13 @@ package MGrid {
             :>>stopCharging{
                 :>> feedbackTopicType = FeedbackTopicType::INTERN;
                 :>> componentTopic = KebaP30.p13;
+                test2:>> inputParameters = KebaP30.p13.power;
+                test3:> test2 = KebaP30.maxConsumption;
+               test4:>outputParameters = KebaP30.p13.power;
+              
             }
         }
     
-    
+    }
     
 }
