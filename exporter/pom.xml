@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.github.cloud-DTs</groupId>
             <artifactId>DigitalTwinProfileSysmlv2JavaLibrary</artifactId>
-            <version>v1.0.6</version>
+            <version>v1.0.7</version>
         </dependency>
     </dependencies>
 
