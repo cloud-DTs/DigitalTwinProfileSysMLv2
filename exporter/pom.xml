@@ -15,16 +15,21 @@
 
     <repositories>
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
+            <id>cloud-dts</id>
+            <name>GitHub Packages</name>
+            <url>https://maven.pkg.github.com/cloud-DTs/DigitalTwinProfileSysmlv2JavaLibrary</url>
+        </repository>
+        <repository>
+            <id>cloud-dts</id>
+            <url>https://maven.pkg.github.com/cloud-DTs/Sysmlv2ModelParser</url>
         </repository>
     </repositories>
 
     <dependencies>
         <dependency>
-            <groupId>com.github.cloud-DTs</groupId>
-            <artifactId>DigitalTwinProfileSysmlv2JavaLibrary</artifactId>
-            <version>v1.0.7</version>
+            <groupId>org.example</groupId>
+            <artifactId>sysml-digital-twin-profile</artifactId>
+            <version>[1.0.0,)</version>
         </dependency>
     </dependencies>
 

@@ -26,5 +26,10 @@
       <option name="name" value="GitHub Packages" />
       <option name="url" value="https://maven.pkg.github.com/mcotrotzo/SysmlConvertere" />
     </remote-repository>
+    <remote-repository>
+      <option name="id" value="cloud-dts" />
+      <option name="name" value="cloud-dts" />
+      <option name="url" value="https://maven.pkg.github.com/cloud-DTs/Sysmlv2ModelParser" />
+    </remote-repository>
   </component>
 </project>
