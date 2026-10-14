@@ -19,10 +19,6 @@
             <name>GitHub Packages</name>
             <url>https://maven.pkg.github.com/cloud-DTs/DigitalTwinProfileSysmlv2JavaLibrary</url>
         </repository>
-        <repository>
-            <id>cloud-dts</id>
-            <url>https://maven.pkg.github.com/cloud-DTs/Sysmlv2ModelParser</url>
-        </repository>
     </repositories>
 
     <dependencies>
