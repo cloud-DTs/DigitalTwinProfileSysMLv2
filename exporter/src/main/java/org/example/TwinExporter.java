@@ -76,10 +76,15 @@ public class TwinExporter {
 	public ArrayNode events(TwinCoreApi twin) {
 		ArrayNode result = json.createArrayNode();
 		for (ConditionUsage condition : twin.getConditions()) {
+			System.out.println(condition.getName());
+
 			String expression = "%s %s %s".formatted(
 					operandChain(condition, condition.getLeftOperand(), "leftOperand"),
 					OPERATOR_SYMBOLS.get(condition.getOperator().flatMap(o -> o.getValue()).orElse(EnumComparisonOperator.EQUAL)),
 					operandChain(condition, condition.getRightOperand(), "rightOperand"));
+			if(condition.getStrategyActions().isEmpty()){
+				throw new IllegalArgumentException("Condition '%s' has no strategy actions.".formatted(condition.getName()));
+			}
 			for (StrategyActionUsage action : condition.getStrategyActions()) {
 				ObjectNode event = result.addObject();
 				event.put("condition", expression);

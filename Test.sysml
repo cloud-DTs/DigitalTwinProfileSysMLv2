@@ -2,116 +2,119 @@ package MGrid {
 
     private import MetaModelDigitalTwin::*;
 
-    #Component def PAC_Sensor {
-        
-    }
-    #Entity def Battery{
-        #component sensor: PAC_Sensor{
+    #Component def PAC_Sensor { }
+
+    #Component def BatteryController { }
+
+    #Entity def Battery {
+        #component sensor : PAC_Sensor {
             #measureAttribute totalCapacity {
-                    :>> dataType default AttributeDataType::INTEGER;
-                }
-        }
-        
-    }
-
-    #Entity def PV{
-        #component sensor: PAC_Sensor{
-            #measureAttribute output{
-                    :>> dataType default AttributeDataType::DOUBLE;
-                }
+                :>> dataType default AttributeDataType::INTEGER;
             }
-        
+            #measureAttribute power {
+                :>> dataType default AttributeDataType::DOUBLE;
+            }
+        }
+        #component controller : BatteryController;
     }
 
-    #Condition def StopCharging{
-        #strategyAction stopCharging :>>strategieActions{
-        :>> name = "StopCharging";
-        :>> strategyType = StrategyType::LAMBDA;
-        :>> pathToCode = "/home/marco/HackathonSysmlv2DemoRepository/digital-twin-manager/lambda_functions/event_actions/high-temperature-callback";
-        :>> external = false;
+    #Entity def PV {
+        #component sensor : PAC_Sensor {
+            #measureAttribute output {
+                :>> dataType default AttributeDataType::DOUBLE;
+            }
         }
     }
 
-    #Entity def Charger{
+    #Entity def Charger {
         #constAttribute maxConsumption {
             :>> value default "50.0";
-            :>>dataType default AttributeDataType::DOUBLE;
+            :>> dataType default AttributeDataType::DOUBLE;
         }
-        #constAttribute maxConsumptionVec {
-            :>> value default "(50.0, 50.0, 50.0)";
-            :>>dataType default AttributeDataType::VECTOR_DOUBLE;
+        #component sensor : PAC_Sensor {
+            #measureAttribute power {
+                :>> dataType default AttributeDataType::DOUBLE;
+            }
+            #measureAttribute consumption {
+                :>> dataType default AttributeDataType::DOUBLE;
+            }
         }
-        #component sensor: PAC_Sensor;
     }
 
+    #Condition def ChargerChanged {
+        #strategyAction balance :>> strategieActions {
+            :>> name = "Balance";
+            :>> strategyType = StrategyType::LAMBDA;
+            :>> pathToCode = "lambda_functions/event_actions/energy-management";
+            :>> external = false;
+            :>> feedbackTopicType = FeedbackTopicType::INTERN;
+        }
+    }
 
-     
+    #Condition def ChargerChanged2 {
+
+        }
 
     #Twin def MGrid {
-            #entity battery : Battery{
+        #entity MicroGrid {
+            #constAttribute chargingThreshold {
+                :>> value default "0.0";
+                :>> dataType default AttributeDataType::DOUBLE;
+            }
 
-                p16:>>sensor;
-            }
-            #entity KebaP30 : Charger{
-                :>>maxConsumption {
-                    :>> value default "15.0";
-                }
-                p13 :>> sensor{
-                    #measureAttribute power {
-                    :>> dataType default AttributeDataType::DOUBLE;
-                    }
-                }
-            }
-            #entity SieVersicharge :Charger{
+            #entity battery : Battery { p16 :>> sensor; }
+            #entity pv : PV { pV1 :>> sensor; }
 
-                p14 :>> sensor{
-                    #measureAttribute consumption {
-                    :>> dataType default AttributeDataType::DOUBLE;
-                    }
-                }
+            #entity charger1 : Charger {
+                :>> maxConsumption { :>> value default "15.0"; }
+                p13 :>> sensor;
             }
-            #entity SieChargeCC: Charger{
-                p12 :>> sensor{
-                    #measureAttribute consumption {
-                    :>> dataType default AttributeDataType::DOUBLE;
-                    }
-                }
-            }
-            #entity pv : PV{
-                pV1 :>> sensor;
-            }
-            #entity SieChargeD : Charger{
-                p17 :>> sensor{
-                    #measureAttribute consumption {
-                    :>> dataType default AttributeDataType::DOUBLE;
-                    }
-                }
-            }
-            #entity SieCPC20 : Charger{
-                p11 :>> sensor{
-                    #measureAttribute consumption {
-                    :>> dataType default AttributeDataType::DOUBLE;
-                    }
-                }
-            }
-    
-        :>>hotDatabaseRetentionDays default 30;
-        :>>coldDatabaseRetentionDays default 30;
+            #entity charger2 : Charger { p14 :>> sensor; }
+            #entity charger3 : Charger { p12 :>> sensor; }
+            #entity charger4 : Charger { p17 :>> sensor; }
+            #entity charger5 : Charger { p11 :>> sensor; }
+        }
 
-        #condition stopCharging :StopCharging{
-            :>>leftOperand = KebaP30.p13.power;
-            :>>operator = ComparisonOperator::EQUAL;
-            :>>rightOperand = KebaP30.maxConsumption;
-            :>>stopCharging{
-                :>> feedbackTopicType = FeedbackTopicType::INTERN;
-                :>> componentTopic = KebaP30.p13;
-                test2:>> inputParameters = KebaP30.p13.power;
-                test3:> test2 = KebaP30.maxConsumption;
-               test4:>outputParameters = KebaP30.p13.power;
-              
+        :>> hotDatabaseRetentionDays default 30;
+        :>> coldDatabaseRetentionDays default 30;
+
+        #condition charger1Changed : ChargerChanged2 {
+            :>> leftOperand = MicroGrid.charger1.p13.power;
+            :>> operator = ComparisonOperator::GREATER_THAN;
+            :>> rightOperand = MicroGrid.chargingThreshold;
+
+        }
+        #condition charger2Changed : ChargerChanged {
+            :>> leftOperand = MicroGrid.charger2.p14.power;
+            :>> operator = ComparisonOperator::GREATER_THAN;
+            :>> rightOperand = MicroGrid.chargingThreshold;
+            balance2 :>> balance {
+                :>> componentTopic = MicroGrid.battery.controller;
             }
         }
-    
+        #condition charger3Changed : ChargerChanged {
+            :>> leftOperand = MicroGrid.charger3.p12.power;
+            :>> operator = ComparisonOperator::GREATER_THAN;
+            :>> rightOperand = MicroGrid.chargingThreshold;
+            balance3 :>> balance {
+                :>> componentTopic = MicroGrid.battery.controller;
+            }
+        }
+        #condition charger4Changed : ChargerChanged {
+            :>> leftOperand = MicroGrid.charger4.p17.power;
+            :>> operator = ComparisonOperator::GREATER_THAN;
+            :>> rightOperand = MicroGrid.chargingThreshold;
+            balance4 :>> balance {
+                :>> componentTopic = MicroGrid.battery.controller;
+            }
+        }
+        #condition charger5Changed : ChargerChanged {
+            :>> leftOperand = MicroGrid.charger5.p11.power;
+            :>> operator = ComparisonOperator::GREATER_THAN;
+            :>> rightOperand = MicroGrid.chargingThreshold;
+            balance5 :>> balance {
+                :>> componentTopic = MicroGrid.battery.controller;
+            }
+        }
     }
-    
 }
