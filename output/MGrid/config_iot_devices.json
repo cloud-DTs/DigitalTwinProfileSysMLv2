@@ -24,6 +24,15 @@
                 "name": "maxConsumption",
                 "dataType": "DOUBLE",
                 "initValue": 15.0
+            },
+            {
+                "name": "maxConsumptionVec",
+                "dataType": "VECTOR_DOUBLE",
+                "initValue": [
+                    50.0,
+                    50.0,
+                    50.0
+                ]
             }
         ]
     },
@@ -43,6 +52,15 @@
                 "name": "maxConsumption",
                 "dataType": "DOUBLE",
                 "initValue": 50.0
+            },
+            {
+                "name": "maxConsumptionVec",
+                "dataType": "VECTOR_DOUBLE",
+                "initValue": [
+                    50.0,
+                    50.0,
+                    50.0
+                ]
             }
         ]
     },
@@ -62,6 +80,15 @@
                 "name": "maxConsumption",
                 "dataType": "DOUBLE",
                 "initValue": 50.0
+            },
+            {
+                "name": "maxConsumptionVec",
+                "dataType": "VECTOR_DOUBLE",
+                "initValue": [
+                    50.0,
+                    50.0,
+                    50.0
+                ]
             }
         ]
     },
@@ -90,6 +117,15 @@
                 "name": "maxConsumption",
                 "dataType": "DOUBLE",
                 "initValue": 50.0
+            },
+            {
+                "name": "maxConsumptionVec",
+                "dataType": "VECTOR_DOUBLE",
+                "initValue": [
+                    50.0,
+                    50.0,
+                    50.0
+                ]
             }
         ]
     },
@@ -109,6 +145,15 @@
                 "name": "maxConsumption",
                 "dataType": "DOUBLE",
                 "initValue": 50.0
+            },
+            {
+                "name": "maxConsumptionVec",
+                "dataType": "VECTOR_DOUBLE",
+                "initValue": [
+                    50.0,
+                    50.0,
+                    50.0
+                ]
             }
         ]
     }
