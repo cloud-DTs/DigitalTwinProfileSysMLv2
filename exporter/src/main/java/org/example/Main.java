@@ -64,6 +64,11 @@ public class Main {
 		}
 		Files.createDirectories(outputDir);
 		write(writer, outputDir.resolve("twins.json"), index);
+
+		if (twins.isEmpty()) {
+			System.err.println("Error: no digital twin generated (none found or all names longer than " + MAX_TWIN_NAME_LENGTH + " characters)");
+			System.exit(1);
+		}
 	}
 
 	private static boolean hasValidName(AbstractType<?, ?> twin) {
