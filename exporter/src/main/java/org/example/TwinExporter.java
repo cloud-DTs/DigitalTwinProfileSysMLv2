@@ -21,10 +21,8 @@ import org.example.Model.Enums.EnumFeedbackTopicType;
 import org.example.Model.Strategy.StrategyActionUsage;
 import org.example.Model.Twin.TwinCoreApi;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TwinExporter {
@@ -53,8 +51,18 @@ public class TwinExporter {
 	}
 
 	public String id(AbstractType<?, ?> element) {
-		return shortUuid.encode(element.getId());
+		return id(element.getId());
 	}
+
+	public String id(UUID uuid) {
+		return shortUuid.encode(uuid);
+	}
+
+	public String id(String uuid) {
+		return shortUuid.encode(UUID.fromString(uuid));
+	}
+
+
 
 
 	public ObjectNode config(String twinName, TwinCoreApi twin) {
@@ -127,7 +135,10 @@ public class TwinExporter {
 					.put("iotDeviceId", id(component)).put("componentTypeId", componentTypeId(component)).put("componentTypeName", componentTypeName(component));
 		}
 		if (!entity.getConstAttributes().isEmpty()) {
-			children.addObject().put("iotDeviceId", constComponentId(entity)).put("type", "component").put("name", entity.getName() + CONST_COMPONENT_SUFFIX).put("componentTypeId", constComponentId(entity));
+			children.addObject().put("iotDeviceId", constComponentId(entity))
+					.put("type", "component")
+					.put("name", entity.getName() + CONST_COMPONENT_SUFFIX)
+					.put("componentTypeId", constComponentTypeId(entity));
 		}
 		return node;
 	}
@@ -212,9 +223,14 @@ public class TwinExporter {
 		return String.join(".", id(parent), parent.getName() + CONST_COMPONENT_SUFFIX, attribute.getName());
 	}
 
+	private String constComponentTypeId(EntityUsage entity) {
+		return id(UUID.nameUUIDFromBytes(new TreeSet<>(schema(entity.getConstAttributes())).toString().getBytes(StandardCharsets.UTF_8)));	}
+
 	private String constComponentId(EntityUsage entity) {
-		return id(entity) + CONST_COMPONENT_SUFFIX;
+		return id(entity)+CONST_COMPONENT_SUFFIX;
 	}
+
+
 
 	private String dataType(MeasureAttributeUsage<?, ?> attribute) {
 		return attribute.getDataType().flatMap(type -> type.getValue()).map(EnumAttributeDataType::getStringRepresentation).orElse("STRING");
