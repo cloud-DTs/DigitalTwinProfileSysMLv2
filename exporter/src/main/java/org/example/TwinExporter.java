@@ -11,6 +11,7 @@ import org.example.Model.Attribute.ConstAttributeUsage;
 import org.example.Model.Attribute.MeasureAttributeUsage;
 import org.example.Model.Attribute.MeasureReferenceUsage;
 import org.example.Model.Attribute.TwinAttributeUsage;
+import org.example.Model.Component.ComponentDefinition;
 import org.example.Model.Component.ComponentUsage;
 import org.example.Model.Condition.ConditionUsage;
 import org.example.Model.Entity.EntityUsage;
@@ -23,6 +24,8 @@ import org.example.Model.Twin.TwinCoreApi;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class TwinExporter {
 
@@ -39,6 +42,9 @@ public class TwinExporter {
 	private final ObjectMapper json;
 	private final ShortUuid shortUuid;
 	private final ConstValue constValue;
+
+
+
 
 	public TwinExporter(ObjectMapper json, ShortUuid shortUuid, ConstValue constValue) {
 		this.json = json;
@@ -64,6 +70,15 @@ public class TwinExporter {
 		ArrayNode result = json.createArrayNode();
 		twin.getEntities().forEach(entity -> result.add(entityHierarchy(entity)));
 		return result;
+	}
+
+
+	private Set<String> schema(List<? extends MeasureAttributeUsage<?, ?>> attrs) {
+		return attrs.stream().map(a -> {
+			if (a.getName() == null) throw new IllegalArgumentException(
+					"Unnamed attribute in '%s'".formatted(a.getParent().map(AbstractType::getName).orElse("?")));
+			return a.getName() + ":" + dataType(a);
+		}).collect(Collectors.toSet());
 	}
 
 	public ArrayNode iotDevices(TwinCoreApi twin) {
@@ -93,6 +108,11 @@ public class TwinExporter {
 		}
 		return result;
 	}
+	private Optional<ComponentDefinition> sharedDef(ComponentUsage c) {
+		return c.getDefinition().filter(def -> schema(def.getMeasurements()).equals(schema(c.getMeasurements())));
+	}
+	private String componentTypeId(ComponentUsage c)   { return sharedDef(c).map(this::id).orElse(id(c)); }
+	private String componentTypeName(ComponentUsage c) { return sharedDef(c).map(AbstractType::getName).orElse(c.getName()); }
 
 	private ObjectNode entityHierarchy(EntityUsage entity) {
 		ObjectNode node = json.createObjectNode();
@@ -102,10 +122,12 @@ public class TwinExporter {
 		ArrayNode children = node.putArray("children");
 		entity.getEntities().forEach(sub -> children.add(entityHierarchy(sub)));
 		for (ComponentUsage component : entity.getComponents()) {
-			children.addObject().put("iotDeviceId", id(component)).put("type", "component").put("name", component.getName());
+			children.addObject()
+					.put("type", "component").put("name", component.getName())
+					.put("iotDeviceId", id(component)).put("componentTypeId", componentTypeId(component)).put("componentTypeName", componentTypeName(component));
 		}
 		if (!entity.getConstAttributes().isEmpty()) {
-			children.addObject().put("iotDeviceId", constComponentId(entity)).put("type", "component").put("name", entity.getName() + CONST_COMPONENT_SUFFIX);
+			children.addObject().put("iotDeviceId", constComponentId(entity)).put("type", "component").put("name", entity.getName() + CONST_COMPONENT_SUFFIX).put("componentTypeId", constComponentId(entity));
 		}
 		return node;
 	}
