@@ -55,7 +55,7 @@
                         "iotDeviceId": "UuAtSjUEpfUmY7d6R4ojQ8const_component",
                         "type": "component",
                         "name": "charger1const_component",
-                        "componentTypeId": "UuAtSjUEpfUmY7d6R4ojQ8const_component"
+                        "componentTypeId": "37qGWocU7By8MfpoHwr96S"
                     }
                 ]
             },
@@ -75,7 +75,7 @@
                         "iotDeviceId": "X3R77BD8uwbJ8x9gshXKcrconst_component",
                         "type": "component",
                         "name": "charger2const_component",
-                        "componentTypeId": "X3R77BD8uwbJ8x9gshXKcrconst_component"
+                        "componentTypeId": "37qGWocU7By8MfpoHwr96S"
                     }
                 ]
             },
@@ -95,7 +95,7 @@
                         "iotDeviceId": "aT5AoMFeEV7qcVjVcfJcmhconst_component",
                         "type": "component",
                         "name": "charger3const_component",
-                        "componentTypeId": "aT5AoMFeEV7qcVjVcfJcmhconst_component"
+                        "componentTypeId": "37qGWocU7By8MfpoHwr96S"
                     }
                 ]
             },
@@ -115,7 +115,7 @@
                         "iotDeviceId": "aXmuA763rgKwXHfVi4Ccbpconst_component",
                         "type": "component",
                         "name": "charger4const_component",
-                        "componentTypeId": "aXmuA763rgKwXHfVi4Ccbpconst_component"
+                        "componentTypeId": "37qGWocU7By8MfpoHwr96S"
                     }
                 ]
             },
@@ -135,7 +135,7 @@
                         "iotDeviceId": "Jt64nWrcDgDFmbBFJAtvpPconst_component",
                         "type": "component",
                         "name": "charger5const_component",
-                        "componentTypeId": "Jt64nWrcDgDFmbBFJAtvpPconst_component"
+                        "componentTypeId": "37qGWocU7By8MfpoHwr96S"
                     }
                 ]
             },
@@ -283,7 +283,7 @@
                 "iotDeviceId": "YhvsPmwLnQapWThsv2vtxsconst_component",
                 "type": "component",
                 "name": "MicroGridconst_component",
-                "componentTypeId": "YhvsPmwLnQapWThsv2vtxsconst_component"
+                "componentTypeId": "QoxRfKHyvydtjdcFNRVxWQ"
             }
         ]
     }
