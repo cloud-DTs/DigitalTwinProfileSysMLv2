@@ -13,8 +13,6 @@ RUN --mount=type=secret,id=gh_token \
 FROM eclipse-temurin:21-jre
 COPY --from=build /src/target/exporter-1.0-SNAPSHOT.jar /opt/exporter.jar
 
-VOLUME ["/pipeline/input", "/pipeline/output", "/pipeline/code"]
-
 
 ENTRYPOINT ["java", "-jar", "/opt/exporter.jar"]
 CMD ["/pipeline/output", "/pipeline/input"]
