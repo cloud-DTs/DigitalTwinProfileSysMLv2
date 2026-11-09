@@ -29,19 +29,21 @@ public class Main {
 
 	private static final int MAX_TWIN_NAME_LENGTH = 10;
 
+	private static final String SHARED_TYPES_FLAG = "--shared-component-types";
 
 	public static void main(String[] args) throws IOException, SemanticException {
-		if (args.length < 2) {
-			throw new IllegalArgumentException("Usage: <outputDir> <sysml file or directory>... (at least one model path is required)");
+		boolean sharedComponentTypes = Arrays.asList(args).contains(SHARED_TYPES_FLAG);
+		String[] positional = Arrays.stream(args).filter(a -> !a.equals(SHARED_TYPES_FLAG)).toArray(String[]::new);
+		if (positional.length < 2) {
+			throw new IllegalArgumentException("Usage: [" + SHARED_TYPES_FLAG + "] <outputDir> <sysml file or directory>...");
 		}
-		Path outputDir = Path.of(args[0]);
-		String[] modelPaths = Arrays.copyOfRange(args, 1, args.length);
 
+		Path outputDir = Path.of(positional[0]);
+		String[] modelPaths = Arrays.copyOfRange(positional, 1, positional.length);
 		ResultConverter result = new DTLibraryParser().parse(modelPaths);
-
 		ObjectMapper json = new ObjectMapper();
 		ObjectWriter writer = json.writer(prettyPrinter());
-		TwinExporter exporter = new TwinExporter(json, new ShortUuid(), new ConstValue());
+		TwinExporter exporter = new TwinExporter(json, new ShortUuid(), new ConstValue(), sharedComponentTypes);
 
 		List<AbstractType<?, ?>> twins = Stream.concat(result.getByType(TwinDefinition.class).stream(), result.getByType(TwinUsage.class).stream())
 				.filter(twin -> !twin.isLibrary() && twin.getParent().isEmpty())
