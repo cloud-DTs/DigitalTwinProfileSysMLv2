@@ -41,13 +41,16 @@ public class TwinExporter {
 	private final ShortUuid shortUuid;
 	private final ConstValue constValue;
 
+	private final boolean sharedComponentTypes;
 
 
 
-	public TwinExporter(ObjectMapper json, ShortUuid shortUuid, ConstValue constValue) {
+	public TwinExporter(ObjectMapper json, ShortUuid shortUuid, ConstValue constValue, boolean sharedComponentTypes) {
 		this.json = json;
 		this.shortUuid = shortUuid;
 		this.constValue = constValue;
+		this.sharedComponentTypes = sharedComponentTypes;
+
 	}
 
 	public String id(AbstractType<?, ?> element) {
@@ -130,15 +133,21 @@ public class TwinExporter {
 		ArrayNode children = node.putArray("children");
 		entity.getEntities().forEach(sub -> children.add(entityHierarchy(sub)));
 		for (ComponentUsage component : entity.getComponents()) {
-			children.addObject()
+			ObjectNode child = children.addObject()
 					.put("type", "component").put("name", component.getName())
-					.put("iotDeviceId", id(component)).put("componentTypeId", componentTypeId(component)).put("componentTypeName", componentTypeName(component));
+					.put("iotDeviceId", id(component));
+			if (sharedComponentTypes) {
+				child.put("componentTypeId", componentTypeId(component))
+						.put("componentTypeName", componentTypeName(component));
+			}
 		}
 		if (!entity.getConstAttributes().isEmpty()) {
-			children.addObject().put("iotDeviceId", constComponentId(entity))
+			ObjectNode constChild = children.addObject().put("iotDeviceId", constComponentId(entity))
 					.put("type", "component")
-					.put("name", entity.getName() + CONST_COMPONENT_SUFFIX)
-					.put("componentTypeId", constComponentTypeId(entity));
+					.put("name", entity.getName() + CONST_COMPONENT_SUFFIX);
+			if (sharedComponentTypes) {
+				constChild.put("componentTypeId", constComponentTypeId(entity));
+			}
 		}
 		return node;
 	}
