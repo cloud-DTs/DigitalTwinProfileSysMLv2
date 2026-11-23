@@ -1,0 +1,39 @@
+services:
+  sysml-kernel:
+    platform: ${DOCKER_DEFAULT_PLATFORM:-linux/amd64}
+    image: csba184/sysml.jupyter:latest
+    container_name: sysml-kernel-container
+    tty: true
+    stdin_open: true
+    entrypoint: []
+    command: >
+      conda run --no-capture-output -n sysml
+      jupyter kernel --kernel=sysml --ip=0.0.0.0
+    environment:
+      SYSML_API_SERVER: "http://sysmlapiserver:9000"
+
+  digital-twin-profile-sysml-v2:
+    platform: ${DOCKER_DEFAULT_PLATFORM:-linux/amd64}
+    build:
+      context: .
+    image: digital-twin-profile-sysml-v2:local
+    container_name: digital-twin-profile-sysml-v2
+    depends_on:
+      sysml-kernel:
+        condition: service_started
+    environment:
+      SYSML_KERNEL_CONTAINER: "sysml-kernel-container"
+      DTP_PATH_MAP: "${DTP_PATH_MAP:-}"
+    volumes:
+      - type: bind
+        source: ${DTP_V2_INPUT_HOST_DIR:-./src/sysmlfiles}
+        target: /pipeline/input
+        read_only: true
+      - type: bind
+        source: ${DTP_V2_OUTPUT_HOST_DIR:-./output}
+        target: /pipeline/output
+      - /var/run/docker.sock:/var/run/docker.sock
+      - type: bind
+        source: ${PIPELINE_CODE_HOST_DIR:-./testLambdaFunctions}
+        target: /pipeline/code
+        read_only: true
